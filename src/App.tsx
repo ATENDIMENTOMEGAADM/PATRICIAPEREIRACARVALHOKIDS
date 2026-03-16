@@ -138,12 +138,12 @@ export default function App() {
     <div className="min-h-screen bg-[#FDFBF9] text-[#5A5350] font-sans pb-20 md:pb-0">
       
       {/* --- Navegação --- */}
-      <nav className="fixed md:sticky top-0 z-40 w-full pointer-events-none md:pointer-events-auto md:bg-white/95 md:backdrop-blur-xl md:border-b md:border-gray-100 md:shadow-sm transition-all duration-300">
+      <nav className="absolute md:sticky top-0 z-40 w-full pointer-events-none md:pointer-events-auto md:bg-white/95 md:backdrop-blur-xl md:border-b md:border-gray-100 md:shadow-sm transition-all duration-300">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-0 pointer-events-auto">
-          <div className="flex justify-start md:justify-between items-center h-auto md:h-40 py-2 md:py-0">
+          <div className="flex justify-center md:justify-between items-center h-auto md:h-40 py-2 md:py-0">
             {/* Logo / Nome */}
             <a href="#" className="flex-shrink-0 flex items-center">
-              <img src="https://github.com/patriciapereiracarvalhokids-ctrl/patriciapereiracarvalhokids/blob/main/2afdbeae-999f-4c49-9f8c-56efb3fcbe7d.png?raw=true" alt="Dra. Patricia Carvalho" className="h-16 sm:h-24 md:h-36 lg:h-40 w-auto object-contain drop-shadow-md md:drop-shadow-none" referrerPolicy="no-referrer" />
+              <img src="https://github.com/patriciapereiracarvalhokids-ctrl/logo/blob/main/logo%20compactada.png?raw=true" alt="Dra. Patricia Carvalho" className="h-32 sm:h-48 md:h-36 lg:h-40 w-auto object-contain drop-shadow-md md:drop-shadow-none" referrerPolicy="no-referrer" />
             </a>
 
             {/* Menu Desktop */}
@@ -186,12 +186,12 @@ export default function App() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row items-center">
             {/* Texto */}
-            <FadeIn delay={0.1} className="w-full md:w-1/2 px-6 pt-28 pb-12 md:py-24 lg:py-32 z-10">
+            <FadeIn delay={0.1} className="w-full md:w-1/2 px-6 pt-44 sm:pt-56 md:py-24 lg:py-32 z-10">
               <h2 className="text-sm font-semibold text-[#A8D0C6] tracking-widest uppercase mb-3">Dra. Patricia Pereira Carvalho</h2>
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-medium text-[#5A5350] leading-tight mb-6">
                 Cuidando da saúde e do bem-estar do seu maior tesouro.
               </h1>
-              <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed text-justify">
+              <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed text-left sm:text-justify">
                 Atendimento pediátrico e gastropediátrico humanizado, focado no desenvolvimento saudável e na tranquilidade da sua família.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
@@ -225,9 +225,9 @@ export default function App() {
             {/* Imagem */}
             <FadeIn delay={0.3} className="w-full md:w-1/2 h-[400px] md:h-[600px] relative">
               <img 
-                src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=1000" 
-                alt="Bebê sorrindo feliz" 
-                className="absolute inset-0 w-full h-full object-cover object-center rounded-bl-[100px] md:rounded-bl-[200px]"
+                src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/IMG_2247.PNG?raw=true" 
+                alt="Dra. Patricia Carvalho" 
+                className="absolute inset-0 w-full h-full object-cover object-top rounded-bl-[100px] md:rounded-bl-[200px]"
                 referrerPolicy="no-referrer"
               />
               {/* Gradiente para suavizar a borda da imagem no mobile */}
@@ -263,7 +263,7 @@ export default function App() {
                 <Baby className="w-8 h-8 text-[#A8D0C6]" />
               </div>
               <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-3">Puericultura</h3>
-              <p className="text-sm text-gray-600 leading-relaxed text-justify">
+              <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
                 Acompanhamento integral do crescimento e desenvolvimento da criança, desde o nascimento até a adolescência.
               </p>
             </FadeIn>
@@ -274,7 +274,7 @@ export default function App() {
                 <Stethoscope className="w-8 h-8 text-[#D1AFA6]" />
               </div>
               <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-3">Gastropediatria</h3>
-              <p className="text-sm text-gray-600 leading-relaxed text-justify">
+              <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
                 Diagnóstico e tratamento de doenças do aparelho digestivo, como refluxo, alergias alimentares e constipação.
               </p>
             </FadeIn>
@@ -285,7 +285,7 @@ export default function App() {
                 <Heart className="w-8 h-8 text-[#A8D0C6]" />
               </div>
               <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-3">Consulta Pré-natal</h3>
-              <p className="text-sm text-gray-600 leading-relaxed text-justify">
+              <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
                 Orientação para os pais antes do nascimento, preparando para a chegada do bebê, amamentação e primeiros cuidados.
               </p>
             </FadeIn>
@@ -296,7 +296,7 @@ export default function App() {
                 <Apple className="w-8 h-8 text-[#D1AFA6]" />
               </div>
               <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-3">Introdução Alimentar</h3>
-              <p className="text-sm text-gray-600 leading-relaxed text-justify">
+              <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
                 Guia prático e seguro para iniciar a alimentação sólida do seu bebê, respeitando o tempo e as necessidades dele.
               </p>
             </FadeIn>
@@ -315,9 +315,9 @@ export default function App() {
               <div className="relative">
                 <div className="absolute inset-0 bg-[#EAD5D1] rounded-[40px] transform translate-x-4 translate-y-4"></div>
                 <img 
-                  src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=800" 
-                  alt="Pediatra examinando bebê" 
-                  className="relative rounded-[40px] shadow-lg w-full object-cover aspect-[4/5]"
+                  src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/IMG_2246.PNG?raw=true" 
+                  alt="Dra. Patricia Carvalho" 
+                  className="relative rounded-[40px] shadow-lg w-full object-cover object-top aspect-[4/5]"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -339,7 +339,7 @@ export default function App() {
                 @patricia.gastroped
               </a>
               
-              <div className="space-y-4 text-gray-600 leading-relaxed mb-8 text-justify">
+              <div className="space-y-4 text-gray-600 leading-relaxed mb-8 text-left sm:text-justify">
                 <p>
                   Sou médica formada pela Universidade do Estado do Pará (UEPA) no ano de 2012. Desde então, dedico minha vida a cuidar da saúde e do desenvolvimento das crianças.
                 </p>
@@ -381,12 +381,12 @@ export default function App() {
           </FadeIn>
 
           {/* Timeline Tabs */}
-          <FadeIn delay={0.1} className="flex overflow-x-auto hide-scrollbar justify-start md:justify-center gap-4 mb-12 pb-4 px-2">
+          <FadeIn delay={0.1} className="flex overflow-x-auto hide-scrollbar justify-start md:justify-center gap-3 md:gap-4 mb-8 md:mb-12 pb-4 px-4 sm:px-0 -mx-4 sm:mx-0">
             {timelineData.map((tab, index) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTimeline(index)}
-                className={`flex-shrink-0 flex items-center px-6 py-4 rounded-2xl transition-all duration-300 ${
+                className={`flex-shrink-0 flex items-center px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl transition-all duration-300 ${
                   activeTimeline === index 
                     ? 'bg-[#A8D0C6] text-white shadow-md transform scale-105' 
                     : 'bg-[#FDFBF9] text-gray-500 hover:bg-[#A8D0C6]/10 border border-gray-100'
@@ -396,7 +396,7 @@ export default function App() {
                   {tab.icon}
                 </div>
                 <div className="text-left">
-                  <div className="font-serif font-medium text-lg leading-tight">{tab.title}</div>
+                  <div className="font-serif font-medium text-base md:text-lg leading-tight">{tab.title}</div>
                   <div className={`text-xs ${activeTimeline === index ? 'text-white/80' : 'text-gray-400'}`}>{tab.age}</div>
                 </div>
               </button>
@@ -404,7 +404,7 @@ export default function App() {
           </FadeIn>
 
           {/* Timeline Content */}
-          <FadeIn delay={0.2} className="bg-[#FDFBF9] rounded-3xl p-8 md:p-12 border border-gray-100 shadow-sm relative overflow-hidden">
+          <FadeIn delay={0.2} className="bg-[#FDFBF9] rounded-2xl md:rounded-3xl p-6 md:p-12 border border-gray-100 shadow-sm relative overflow-hidden">
             {/* Decorative element */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#A8D0C6]/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
             
@@ -492,7 +492,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed italic text-justify">
+              <p className="text-gray-600 text-sm leading-relaxed italic text-left sm:text-justify">
                 "Sou grata a Deus por ter encontrado a Dra. Patricia. Ela sempre nos atende com muito carinho e paciência, tirando todas as nossas dúvidas. Recomendo fortemente!"
               </p>
             </FadeIn>
@@ -512,7 +512,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed italic text-justify">
+              <p className="text-gray-600 text-sm leading-relaxed italic text-left sm:text-justify">
                 "Profissional extremamente competente e atenciosa. Chegamos ao consultório cheios de dúvidas sobre a alimentação do nosso bebê e saímos com o coração leve."
               </p>
             </FadeIn>
@@ -532,7 +532,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed italic text-justify">
+              <p className="text-gray-600 text-sm leading-relaxed italic text-left sm:text-justify">
                 "Uma profissional excepcional! Explica cada detalhe com muita clareza. Obrigada Dra. por cuidar tão bem do meu filho. Recomendo de olhos fechados!"
               </p>
             </FadeIn>
@@ -548,9 +548,9 @@ export default function App() {
             {/* Imagem */}
             <div className="w-full lg:w-1/2 relative min-h-[400px]">
               <img 
-                src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80&w=800" 
-                alt="Criança brincando na consulta" 
-                className="absolute inset-0 w-full h-full object-cover"
+                src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/IMG_2251.PNG?raw=true" 
+                alt="Dra. Patricia Carvalho em consulta" 
+                className="absolute inset-0 w-full h-full object-cover object-top"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
@@ -563,7 +563,7 @@ export default function App() {
               <h2 className="font-serif text-2xl md:text-3xl font-medium mb-6">
                 Minha consulta é dividida em momentos importantes para a saúde do seu filho!
               </h2>
-              <p className="mb-8 text-white/90 leading-relaxed text-justify">
+              <p className="mb-8 text-white/90 leading-relaxed text-left sm:text-justify">
                 Eu me preocupo em entender cada detalhe para oferecer o melhor cuidado possível, sem pressa.
               </p>
 
@@ -614,7 +614,7 @@ export default function App() {
           <FadeIn className="text-center mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Agendamento & Pré-Consulta</h2>
             <div className="w-16 h-1 bg-[#A8D0C6] mx-auto rounded-full mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto text-justify">
+            <p className="text-gray-600 max-w-2xl mx-auto text-left sm:text-justify">
               Escolha a data e horário de sua preferência e preencha os dados abaixo para agilizar o seu atendimento. As informações serão enviadas diretamente para o nosso WhatsApp para finalizarmos o seu agendamento.
             </p>
           </FadeIn>
@@ -634,7 +634,7 @@ export default function App() {
                 <Info className="w-5 h-5 text-[#A8D0C6] mt-0.5 mr-3 flex-shrink-0" />
                 <div>
                   <h4 className="text-sm font-medium text-[#5A5350] mb-1">Como funciona a confirmação?</h4>
-                  <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                  <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
                     Para agilizar seu atendimento, pedimos que sugira até 3 opções. Nossa equipe receberá sua solicitação e <strong>confirmará a data mais próxima disponível</strong> entre as suas escolhas através do WhatsApp. Caso nenhuma das opções esteja livre, sugeriremos o horário mais próximo possível.
                   </p>
                 </div>
@@ -954,9 +954,9 @@ export default function App() {
             <FadeIn delay={0.2} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
               <div className="h-56 overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=800" 
-                  alt="Mala da Maternidade" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/IMG_2249.PNG?raw=true" 
+                  alt="Dra. Patricia Carvalho" 
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" 
                   referrerPolicy="no-referrer" 
                 />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-[#A8D0C6] shadow-sm">
@@ -985,7 +985,7 @@ export default function App() {
             <FadeIn delay={0.3} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
               <div className="h-56 overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&q=80&w=800" 
+                  src="https://images.unsplash.com/photo-1584362917165-526a968579e8?auto=format&fit=crop&q=80&w=800" 
                   alt="Febre na criança" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   referrerPolicy="no-referrer" 
@@ -1046,7 +1046,7 @@ export default function App() {
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${openFaq === 0 ? 'rotate-180' : ''}`} />
               </button>
               {openFaq === 0 && (
-                <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-justify">
+                <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-left sm:text-justify">
                   A primeira consulta costuma durar cerca de 1 hora, pois faço questão de conhecer todo o histórico da criança, tirar todas as dúvidas dos pais e realizar um exame físico detalhado sem pressa.
                 </div>
               )}
@@ -1062,7 +1062,7 @@ export default function App() {
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${openFaq === 1 ? 'rotate-180' : ''}`} />
               </button>
               {openFaq === 1 && (
-                <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-justify">
+                <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-left sm:text-justify">
                   Sim, no momento realizo apenas atendimentos particulares para garantir o tempo e a qualidade de atenção que cada paciente merece. Fornecemos recibo para solicitação de reembolso junto ao seu plano de saúde.
                 </div>
               )}
@@ -1078,7 +1078,7 @@ export default function App() {
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${openFaq === 2 ? 'rotate-180' : ''}`} />
               </button>
               {openFaq === 2 && (
-                <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-justify">
+                <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-left sm:text-justify">
                   Atendo desde recém-nascidos até adolescentes (18 anos) que apresentem sintomas relacionados ao aparelho digestivo, como refluxo, cólicas intensas, dificuldade alimentar, constipação ou diarreia crônica.
                 </div>
               )}
@@ -1104,8 +1104,8 @@ export default function App() {
           <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             {/* Coluna 1: Sobre */}
             <div className="col-span-1 lg:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-              <img src="https://github.com/patriciapereiracarvalhokids-ctrl/patriciapereiracarvalhokids/blob/main/2afdbeae-999f-4c49-9f8c-56efb3fcbe7d.png?raw=true" alt="Dra. Patricia Carvalho" className="h-24 md:h-32 w-auto object-contain mb-6" referrerPolicy="no-referrer" />
-              <p className="text-gray-600 text-sm leading-relaxed mb-4 text-justify">
+              <img src="https://github.com/patriciapereiracarvalhokids-ctrl/logo/blob/main/logo%20compactada.png?raw=true" alt="Dra. Patricia Carvalho" className="h-24 md:h-32 w-auto object-contain mb-6" referrerPolicy="no-referrer" />
+              <p className="text-gray-600 text-sm leading-relaxed mb-4 text-left sm:text-justify">
                 Cuidando da saúde e do bem-estar do seu maior tesouro com amor, dedicação e ciência.
               </p>
               <p className="text-[#A8D0C6] font-medium text-sm">CRM-PA 11040 | RQE 9798</p>

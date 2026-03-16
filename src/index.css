@@ -33,3 +33,12 @@ body {
   background-size: 40px 40px;
   background-position: 0 0, 20px 20px;
 }
+
+/* Esconder scrollbar para os tabs da linha do tempo no mobile */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
