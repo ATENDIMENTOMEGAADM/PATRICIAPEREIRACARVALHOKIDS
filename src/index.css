@@ -3,10 +3,17 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  --color-seda: #FAF7F2;
+  --color-verde-agua: #86B9B0;
+  --color-lilas: #E6E1F0;
+  --color-ametista: #9B8ABF;
+  --color-dourado: #C5A059;
+  --color-dourado-light: #E5D1A4;
 }
 
 body {
-  @apply font-sans text-gray-800 bg-[#FAFAFA];
+  @apply font-sans text-gray-800 bg-seda;
 }
 
 /* Animações Flutuantes para os elementos infantis */
@@ -29,7 +36,7 @@ body {
 
 /* Fundo lúdico de bolinhas bem suave */
 .bg-polka {
-  background-image: radial-gradient(rgba(168, 208, 198, 0.3) 2px, transparent 2px);
+  background-image: radial-gradient(rgba(134, 185, 176, 0.15) 2px, transparent 2px);
   background-size: 40px 40px;
   background-position: 0 0, 20px 20px;
 }

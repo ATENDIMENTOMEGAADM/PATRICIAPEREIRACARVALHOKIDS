@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Home, User, MapPin, Phone, Clock, Baby, Stethoscope, Apple, Heart, ChevronDown, Star, MessageCircle, Instagram, FileText, AlertCircle, Calendar, Info, X, Send, ArrowRight, Shield, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
+import Logo from './components/Logo';
 
 // --- Cores do Tema ---
-// Verde Menta: #A8D0C6
-// Rosa Antigo: #EAD5D1
-// Fundo Claro: #FDFBF9
+// Off-white seda: #FAF7F2
+// Verde Água: #86B9B0
+// Lilás Suave: #E6E1F0
+// Ametista: #9B8ABF
+// Dourado Champagne: #C5A059
 // Texto Escuro: #5A5350
 
 const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) => (
@@ -20,139 +23,66 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   </motion.div>
 );
 
-const timelineData = [
-  {
-    id: 'newborn',
-    title: 'Recém-nascido',
-    age: '0 a 1 mês',
-    icon: <Baby className="w-6 h-6" />,
-    milestones: ['Reflexos primitivos', 'Fixa o olhar brevemente', 'Reconhece a voz da mãe'],
-    consultations: ['Primeira consulta (5 a 7 dias)', 'Avaliação do ganho de peso', 'Apoio e orientação à amamentação'],
-    vaccines: ['BCG (Tuberculose)', 'Hepatite B (1ª dose)']
-  },
-  {
-    id: '3months',
-    title: '3 Meses',
-    age: '3 meses',
-    icon: <Star className="w-6 h-6" />,
-    milestones: ['Sustenta bem a cabeça', 'Sorriso social', 'Acompanha objetos com os olhos'],
-    consultations: ['Consulta mensal de puericultura', 'Acompanhamento do desenvolvimento motor'],
-    vaccines: ['Meningocócica C (1ª dose)', 'Pneumocócica 10 (1ª dose)', 'Rotavírus (1ª dose)']
-  },
-  {
-    id: '6months',
-    title: '6 Meses',
-    age: '6 meses',
-    icon: <Apple className="w-6 h-6" />,
-    milestones: ['Senta com apoio', 'Rola sobre o próprio corpo', 'Balbucia os primeiros sons'],
-    consultations: ['Consulta de rotina', 'Orientações sobre introdução alimentar', 'Avaliação do sono'],
-    vaccines: ['Pentavalente (3ª dose)', 'VIP (3ª dose)', 'Rotavírus (3ª dose)']
-  },
-  {
-    id: '1year',
-    title: '1 Ano',
-    age: '12 meses',
-    icon: <Heart className="w-6 h-6" />,
-    milestones: ['Fica em pé sozinho', 'Dá os primeiros passos', 'Fala as primeiras palavras'],
-    consultations: ['Consulta de 1 ano', 'Avaliação do crescimento', 'Transição para a dieta da família'],
-    vaccines: ['Tríplice Viral (1ª dose)', 'Pneumocócica 10 (Reforço)', 'Meningocócica C (Reforço)']
-  }
-];
 
 export default function App() {
+  const [scrollY, setScrollY] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [activeTimeline, setActiveTimeline] = useState(0);
   const [chatData, setChatData] = useState({ nome: '', assunto: '' });
-  const [formData, setFormData] = useState({
-    responsavel: '',
-    crianca: '',
-    nascimento: '',
-    motivo: '',
-    alergias: '',
-    medicamentos: '',
-    data1: '', horario1: '',
-    data2: '', horario2: '',
-    data3: '', horario3: ''
-  });
 
-  const getAvailableTimes = (dateStr: string) => {
-    if (!dateStr) return [];
-    const [year, month, dayStr] = dateStr.split('-');
-    const date = new Date(Number(year), Number(month) - 1, Number(dayStr));
-    const dayOfWeek = date.getDay();
-
-    // Domingo fechado
-    if (dayOfWeek === 0) return [];
-
-    // Sábado só de manhã, dias de semana o dia todo
-    const baseSlots = dayOfWeek === 6 
-      ? ['08:00', '09:00', '10:00', '11:00'] 
-      : ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
-
-    // Simula alguns horários já agendados de forma determinística
-    const seed = Number(dayStr) + Number(month);
-    return baseSlots.filter((time, index) => (seed + index) % 4 !== 0);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const formatData = (d: string) => d ? d.split('-').reverse().join('/') : '';
-
-    let opcoesTexto = `1ª Opção: ${formatData(formData.data1)} às ${formData.horario1}`;
-    if (formData.data2 && formData.horario2) {
-      opcoesTexto += `\n2ª Opção: ${formatData(formData.data2)} às ${formData.horario2}`;
-    }
-    if (formData.data3 && formData.horario3) {
-      opcoesTexto += `\n3ª Opção: ${formatData(formData.data3)} às ${formData.horario3}`;
-    }
-
-    const text = `Olá Dra. Patricia! Gostaria de agendar uma consulta.\n\n*📅 Opções de Agendamento:*\n${opcoesTexto}\n\n*📋 Dados da Pré-Anamnese:*\n*Responsável:* ${formData.responsavel}\n*Criança:* ${formData.crianca}\n*Data de Nascimento:* ${formData.nascimento.split('-').reverse().join('/')}\n*Motivo da Consulta:* ${formData.motivo}\n*Alergias:* ${formData.alergias || 'Nenhuma'}\n*Medicamentos em uso:* ${formData.medicamentos || 'Nenhum'}`;
-    const encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/5594981539045?text=${encodedText}`, '_blank');
   };
 
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const text = `Olá! Meu nome é ${chatData.nome}. Gostaria de falar sobre: ${chatData.assunto}`;
     const encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/5594981539045?text=${encodedText}`, '_blank');
+    window.open(`https://wa.me/5594992018972?text=${encodedText}`, '_blank');
     setIsChatOpen(false);
     setChatData({ nome: '', assunto: '' });
   };
 
-  const whatsappLink = "https://wa.me/5594981539045?text=Olá,%20gostaria%20de%20agendar%20uma%20consulta%20com%20a%20Dra.%20Patricia.";
-  const urgenciaLink = "https://wa.me/5594981539045?text=URGÊNCIA:%20Preciso%20de%20atendimento%20pediátrico%20imediato!";
+  const whatsappLink = "https://wa.me/5594992018972?text=Ol%C3%A1!%20Gostaria%20de%20agendar%20uma%20consulta%20com%20a%20Dra.%20Patr%C3%ADcia%20Carvalho.";
 
   return (
-    <div className="min-h-screen bg-[#FDFBF9] text-[#5A5350] font-sans pb-20 md:pb-0">
+    <div className="min-h-screen bg-seda text-[#5A5350] font-sans pb-20 md:pb-0">
+      <style>{`
+        @media (max-width: 767px) {
+          .mobile-fade-logo {
+            opacity: ${Math.max(0, 1 - scrollY / 250)};
+            pointer-events: ${scrollY > 150 ? 'none' : 'auto'};
+            transform: translateY(${Math.max(-30, -scrollY / 5)}px);
+            transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+          }
+        }
+      `}</style>
       
       {/* --- Navegação --- */}
-      <nav className="absolute md:sticky top-0 z-40 w-full pointer-events-none md:pointer-events-auto md:bg-white/95 md:backdrop-blur-xl md:border-b md:border-gray-100 md:shadow-sm transition-all duration-300">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-0 pointer-events-auto">
+      <nav className="fixed md:sticky top-0 z-40 w-full pointer-events-none md:pointer-events-auto md:bg-white/95 md:backdrop-blur-xl md:border-b md:border-gray-100 md:shadow-sm transition-all duration-300">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-0 pointer-events-none md:pointer-events-auto">
           <div className="flex justify-center md:justify-between items-center h-auto md:h-40 py-2 md:py-0">
             {/* Logo / Nome */}
-            <a href="#" className="flex-shrink-0 flex items-center">
-              <img src="https://github.com/patriciapereiracarvalhokids-ctrl/logo/blob/main/logo%20compactada.png?raw=true" alt="Dra. Patricia Carvalho" className="h-32 sm:h-48 md:h-36 lg:h-40 w-auto object-contain drop-shadow-md md:drop-shadow-none" referrerPolicy="no-referrer" />
+            <a href="#" className="flex-shrink-0 flex items-center mobile-fade-logo pointer-events-auto">
+              <div className="h-40 sm:h-56 md:h-44 lg:h-48 w-auto">
+                <Logo />
+              </div>
             </a>
 
             {/* Menu Desktop */}
             <div className="hidden md:flex space-x-8">
-              <a href="#sobre" className="text-sm font-medium text-gray-600 hover:text-[#A8D0C6] transition-colors">Sobre mim</a>
-              <a href="#servicos" className="text-sm font-medium text-gray-600 hover:text-[#A8D0C6] transition-colors">Serviços</a>
-              <a href="#consulta" className="text-sm font-medium text-gray-600 hover:text-[#A8D0C6] transition-colors">A Consulta</a>
-              <a href="#anamnese" className="text-sm font-medium text-gray-600 hover:text-[#A8D0C6] transition-colors">Pré-Consulta</a>
-              <a href="#localizacao" className="text-sm font-medium text-gray-600 hover:text-[#A8D0C6] transition-colors">Localização</a>
+              <a href="#sobre" className="text-sm font-medium text-gray-600 hover:text-verde-agua transition-colors">Sobre mim</a>
+              <a href="#servicos" className="text-sm font-medium text-gray-600 hover:text-verde-agua transition-colors">Serviços</a>
+              <a href="#consulta" className="text-sm font-medium text-gray-600 hover:text-verde-agua transition-colors">A Consulta</a>
+              <a href="#localizacao" className="text-sm font-medium text-gray-600 hover:text-verde-agua transition-colors">Localização</a>
             </div>
 
             {/* Botão Agendar Desktop */}
@@ -161,13 +91,15 @@ export default function App() {
                 href="https://instagram.com/patricia.gastroped" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-gray-400 hover:text-[#A8D0C6] transition-colors"
+                className="text-gray-400 hover:text-dourado transition-colors"
               >
-                <Instagram className="w-5 h-5" />
+                <Instagram className="w-5 h-5 text-dourado" />
               </a>
               <a 
-                href="#anamnese"
-                className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-full text-white bg-[#A8D0C6] hover:bg-[#95C0B5] transition-colors shadow-sm"
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-full text-white bg-dourado hover:bg-dourado/90 transition-colors shadow-sm"
               >
                 Agendar Consulta
               </a>
@@ -177,47 +109,49 @@ export default function App() {
       </nav>
 
       {/* --- Hero Section --- */}
-      <section className="relative bg-[#EAD5D1]/30 overflow-hidden bg-polka">
-        {/* Elementos Flutuantes */}
-        <div className="absolute top-20 left-10 text-4xl animate-float opacity-70">🎈</div>
-        <div className="absolute top-40 right-20 text-3xl animate-float-slow opacity-60">⭐</div>
-        <div className="absolute bottom-20 left-1/3 text-5xl animate-float-fast opacity-50">🧸</div>
+      <section className="relative bg-seda overflow-hidden bg-polka">
         
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row items-center">
             {/* Texto */}
             <FadeIn delay={0.1} className="w-full md:w-1/2 px-6 pt-44 sm:pt-56 md:py-24 lg:py-32 z-10">
-              <h2 className="text-sm font-semibold text-[#A8D0C6] tracking-widest uppercase mb-3">Dra. Patricia Pereira Carvalho</h2>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-medium text-[#5A5350] leading-tight mb-6">
-                Cuidando da saúde e do bem-estar do seu maior tesouro.
-              </h1>
+              <div className="flex flex-col gap-2 mb-8">
+                <h1 className="font-serif text-6xl md:text-8xl font-light text-black leading-none tracking-tight">
+                  Patrícia
+                </h1>
+                <h1 className="font-serif text-6xl md:text-8xl font-light text-dourado leading-none tracking-tight">
+                  Carvalho
+                </h1>
+                <div className="mt-6 flex flex-col gap-3 items-start">
+                  <span className="bg-verde-agua/10 text-[#4A6661] px-6 py-2 rounded-full text-lg md:text-xl font-medium shadow-sm border border-verde-agua/20">
+                    Pediatra & Gastropediatra
+                  </span>
+                  <span className="bg-lilas/40 text-[#6D5A94] px-5 py-1.5 rounded-full text-base md:text-lg font-medium shadow-sm border border-lilas">
+                    CRM-PA 11040 | RQE 9798 | RQE 9802
+                  </span>
+                </div>
+              </div>
+              
               <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed text-left sm:text-justify">
-                Atendimento pediátrico e gastropediátrico humanizado, focado no desenvolvimento saudável e na tranquilidade da sua família.
+                Cuidado especializado e humanizado em saúde digestiva e pediatria.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
                 <a 
                   href="#anamnese"
-                  className="inline-flex justify-center items-center px-8 py-3.5 border border-transparent text-base font-medium rounded-full text-white bg-[#A8D0C6] hover:bg-[#95C0B5] transition-colors shadow-md"
+                  className="inline-flex justify-center items-center px-8 py-3.5 border border-transparent text-base font-medium rounded-full text-white bg-dourado hover:bg-dourado/90 transition-colors shadow-md"
                 >
                   Agendar Consulta
                 </a>
                 <a 
-                  href={urgenciaLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex justify-center items-center px-8 py-3.5 border border-transparent text-base font-medium rounded-full text-white bg-[#FF9B9B] hover:bg-[#FF8282] transition-colors shadow-md"
+                  href="https://www.instagram.com/dra.patriciapereiracarvalho/"
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex justify-center items-center px-8 py-3.5 border-2 border-dourado/20 text-base font-medium rounded-full text-[#5A5350] hover:bg-white transition-colors shadow-sm"
                 >
-                  <AlertCircle className="w-5 h-5 mr-2" />
-                  Urgência
-                </a>
-                <a 
-                  href="https://instagram.com/patricia.gastroped"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex justify-center items-center px-8 py-3.5 border-2 border-[#EAD5D1] text-base font-medium rounded-full text-[#5A5350] hover:bg-[#EAD5D1]/20 transition-colors"
-                >
-                  <Instagram className="w-5 h-5 mr-2 text-[#A8D0C6]" />
-                  @patricia.gastroped
+                  <div className="p-1.5 rounded-lg bg-dourado text-white mr-2">
+                    <Instagram className="w-4 h-4" />
+                  </div>
+                  @dra.patriciapereiracarvalho
                 </a>
               </div>
             </FadeIn>
@@ -225,254 +159,308 @@ export default function App() {
             {/* Imagem */}
             <FadeIn delay={0.3} className="w-full md:w-1/2 h-[400px] md:h-[600px] relative">
               <img 
-                src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/IMG_2247.PNG?raw=true" 
+                src="https://raw.githubusercontent.com/patriciapereiracarvalhokids-ctrl/fotos/main/IMG_2247.PNG" 
                 alt="Dra. Patricia Carvalho" 
-                className="absolute inset-0 w-full h-full object-cover object-top rounded-bl-[100px] md:rounded-bl-[200px]"
+                className="absolute inset-0 w-full h-full object-cover object-top rounded-bl-[100px] md:rounded-bl-[200px] border-l-4 border-b-4 border-dourado/10"
                 referrerPolicy="no-referrer"
               />
-              {/* Gradiente para suavizar a borda da imagem no mobile */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#FDFBF9] via-transparent to-transparent md:hidden"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FDFBF9] via-transparent to-transparent hidden md:block w-32"></div>
+              {/* Gradientes para suavizar as bordas */}
+              <div className="absolute inset-0 bg-gradient-to-t from-seda via-transparent to-transparent md:hidden"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-seda via-transparent to-transparent hidden md:block w-32"></div>
             </FadeIn>
           </div>
         </div>
       </section>
 
-      {/* --- Banner Faixa --- */}
-      <FadeIn delay={0.2} className="bg-[#EAD5D1] py-8 text-center px-4">
-        <h3 className="font-serif text-2xl md:text-3xl text-[#5A5350] font-medium">
-          Guiando para uma maternidade <span className="italic text-white">tranquila e segura</span>
-        </h3>
-      </FadeIn>
 
-      {/* --- Serviços Section --- */}
-      <section id="servicos" className="py-20 bg-white relative overflow-hidden">
-        <div className="absolute top-10 right-10 text-4xl animate-float opacity-40">🪁</div>
-        <div className="absolute bottom-10 left-10 text-3xl animate-float-slow opacity-40">🍼</div>
-        
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <FadeIn className="text-center mb-16">
-            <h2 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Serviços</h2>
-            <div className="w-16 h-1 bg-[#A8D0C6] mx-auto rounded-full"></div>
-          </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Card 1 */}
-            <FadeIn delay={0.1} className="bg-[#FDFBF9] rounded-2xl p-8 text-center shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
-              <div className="w-16 h-16 mx-auto bg-[#A8D0C6]/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#A8D0C6]/30 transition-colors">
-                <Baby className="w-8 h-8 text-[#A8D0C6]" />
-              </div>
-              <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-3">Puericultura</h3>
-              <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
-                Acompanhamento integral do crescimento e desenvolvimento da criança, desde o nascimento até a adolescência.
-              </p>
-            </FadeIn>
-
-            {/* Card 2 */}
-            <FadeIn delay={0.2} className="bg-[#FDFBF9] rounded-2xl p-8 text-center shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
-              <div className="w-16 h-16 mx-auto bg-[#EAD5D1]/40 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#EAD5D1]/60 transition-colors">
-                <Stethoscope className="w-8 h-8 text-[#D1AFA6]" />
-              </div>
-              <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-3">Gastropediatria</h3>
-              <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
-                Diagnóstico e tratamento de doenças do aparelho digestivo, como refluxo, alergias alimentares e constipação.
-              </p>
-            </FadeIn>
-
-            {/* Card 3 */}
-            <FadeIn delay={0.3} className="bg-[#FDFBF9] rounded-2xl p-8 text-center shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
-              <div className="w-16 h-16 mx-auto bg-[#A8D0C6]/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#A8D0C6]/30 transition-colors">
-                <Heart className="w-8 h-8 text-[#A8D0C6]" />
-              </div>
-              <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-3">Consulta Pré-natal</h3>
-              <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
-                Orientação para os pais antes do nascimento, preparando para a chegada do bebê, amamentação e primeiros cuidados.
-              </p>
-            </FadeIn>
-
-            {/* Card 4 */}
-            <FadeIn delay={0.4} className="bg-[#FDFBF9] rounded-2xl p-8 text-center shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
-              <div className="w-16 h-16 mx-auto bg-[#EAD5D1]/40 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#EAD5D1]/60 transition-colors">
-                <Apple className="w-8 h-8 text-[#D1AFA6]" />
-              </div>
-              <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-3">Introdução Alimentar</h3>
-              <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
-                Guia prático e seguro para iniciar a alimentação sólida do seu bebê, respeitando o tempo e as necessidades dele.
-              </p>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
 
       {/* --- Sobre Mim Section --- */}
-      <section id="sobre" className="py-20 bg-[#FDFBF9]">
+      <section id="sobre" className="py-20 bg-seda">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
             {/* Imagem */}
-            <FadeIn delay={0.1} className="w-full lg:w-5/12 relative">
-              <div className="absolute -top-6 -left-6 text-5xl animate-float-slow z-20">🩺</div>
-              <div className="absolute -bottom-6 -right-6 text-4xl animate-float z-20">👶</div>
+            <FadeIn delay={0.1} className="w-full lg:w-[45%] relative">
               <div className="relative">
-                <div className="absolute inset-0 bg-[#EAD5D1] rounded-[40px] transform translate-x-4 translate-y-4"></div>
+                <div className="absolute inset-0 bg-dourado/20 rounded-[40px] transform translate-x-4 translate-y-4 border border-dourado/30"></div>
                 <img 
-                  src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/IMG_2246.PNG?raw=true" 
+                  src="https://raw.githubusercontent.com/patriciapereiracarvalhokids-ctrl/fotos/main/IMG_2247.PNG" 
                   alt="Dra. Patricia Carvalho" 
-                  className="relative rounded-[40px] shadow-lg w-full object-cover object-top aspect-[4/5]"
+                  className="relative rounded-[40px] shadow-lg w-full object-cover object-top border-4 border-white"
                   referrerPolicy="no-referrer"
                 />
               </div>
             </FadeIn>
 
             {/* Texto */}
-            <FadeIn delay={0.3} className="w-full lg:w-7/12">
-              <h2 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-2">
-                Dra. Patricia Pereira Carvalho
+            <FadeIn delay={0.3} className="w-full lg:w-[55%]">
+              <h2 className="font-serif text-3xl md:text-5xl font-medium text-[#5A5350] mb-2">
+                Dra. Patrícia Pereira Carvalho
               </h2>
-              <p className="text-[#A8D0C6] font-medium mb-2">CRM-PA 11040 | RQE 9798 (Pediatria) | RQE 9802 (Gastropediatria)</p>
-              <a 
-                href="https://instagram.com/patricia.gastroped" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center text-gray-500 hover:text-[#A8D0C6] transition-colors mb-6 text-sm font-medium"
-              >
-                <Instagram className="w-4 h-4 mr-1.5" />
-                @patricia.gastroped
-              </a>
+              <p className="text-verde-agua font-semibold mb-6 text-lg">
+                CRM-PA 11040 | RQE 9798 (Pediatria) | RQE 9802 (Gastropediatria)
+              </p>
               
-              <div className="space-y-4 text-gray-600 leading-relaxed mb-8 text-left sm:text-justify">
+              <div className="mb-8">
+                <h3 className="font-serif text-xl font-semibold text-dourado mb-6 flex items-center">
+                  <span className="w-8 h-[1px] bg-dourado mr-3"></span>
+                  Formação Acadêmica
+                </h3>
+                <div className="space-y-6 relative border-l border-dourado/30 ml-4 pl-8">
+                  <div className="relative">
+                    <div className="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-dourado border-4 border-seda"></div>
+                    <div className="font-bold text-dourado">2012</div>
+                    <div className="text-gray-700">Médica pela Universidade do Estado do Pará</div>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-dourado border-4 border-seda"></div>
+                    <div className="font-bold text-dourado">2022</div>
+                    <div className="text-gray-700">Pediatra pela Fundação Santa Casa de Misericórdia do Pará</div>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-dourado border-4 border-seda"></div>
+                    <div className="font-bold text-dourado">2024</div>
+                    <div className="text-gray-700">Gastropediatra pela Universidade Federal do Rio Grande do Norte</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-600 leading-relaxed mb-8 text-left sm:text-justify">
                 <p>
-                  Sou médica formada pela Universidade do Estado do Pará (UEPA) no ano de 2012. Desde então, dedico minha vida a cuidar da saúde e do desenvolvimento das crianças.
+                  Mais do que dez anos de formação acadêmica, foram anos de aprendizado sobre o que realmente importa: a vida e o bem-estar de quem você mais ama.
                 </p>
                 <p>
-                  Especializei-me em Pediatria e, posteriormente, em Gastroenterologia Pediátrica, para poder oferecer um cuidado ainda mais completo e aprofundado aos meus pequenos pacientes.
-                </p>
-                <p>
-                  Acredito que a pediatria vai muito além de tratar doenças. É sobre construir relacionamentos de confiança com as famílias, ouvir atentamente as preocupações dos pais e garantir que cada criança seja tratada com o carinho, respeito e cuidado que merece.
+                  Essa jornada me ensinou que ser pediatra e gastropediatra é caminhar lado a lado com os pais, oferecendo suporte especializado em cada descoberta ou dificuldade.
                 </p>
               </div>
 
-              {/* Box Destaque */}
-              <div className="bg-[#A8D0C6] rounded-2xl p-8 text-center text-white shadow-md">
-                <h3 className="font-serif text-xl font-medium mb-4">
-                  Atendimento completo e atencioso, em um ambiente seguro e acolhedor.
-                </h3>
+              <div className="bg-white/50 border-l-4 border-dourado p-6 rounded-r-2xl mb-8">
+                <p className="text-gray-700 italic leading-relaxed">
+                  "Vivenciar a alergia alimentar na minha própria casa me deu a clareza necessária para humanizar cada detalhe do atendimento, garantindo que cada pequeno paciente receba não apenas cuidado médico, mas verdadeiro respeito e atenção."
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-4">
                 <a 
                   href="#anamnese"
-                  className="inline-block bg-white text-[#A8D0C6] font-medium px-8 py-3 rounded-full hover:bg-gray-50 transition-colors"
+                  className="inline-block bg-dourado text-white font-medium px-8 py-3 rounded-full hover:bg-dourado/90 transition-colors shadow-md"
                 >
                   Agendar Consulta
                 </a>
-                <p className="text-sm mt-4 opacity-90">Atendimento exclusivo particular</p>
+                <a 
+                  href="https://instagram.com/patricia.gastroped" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center text-dourado hover:text-dourado/80 transition-colors font-medium"
+                >
+                  <Instagram className="w-5 h-5 mr-2" />
+                  @patricia.gastroped
+                </a>
               </div>
             </FadeIn>
           </div>
         </div>
       </section>
 
-      {/* --- Linha do Tempo do Desenvolvimento --- */}
-      <section className="py-20 bg-white border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* --- Áreas de Atuação Section --- */}
+      <section id="servicos" className="py-20 bg-white relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <FadeIn className="text-center mb-16">
-            <h2 className="text-sm font-semibold text-[#A8D0C6] tracking-widest uppercase mb-3">Acompanhamento</h2>
-            <h3 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350]">Linha do Tempo do Bebê</h3>
-            <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
-              Descubra os principais marcos do desenvolvimento do seu filho, além das consultas e vacinas recomendadas para cada fase.
+            <h2 className="text-sm font-semibold text-verde-agua tracking-widest uppercase mb-3">Áreas de Atuação</h2>
+            <h3 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Nossas Especialidades</h3>
+            <div className="w-16 h-1 bg-dourado mx-auto rounded-full mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Cuidado completo e especializado para a saúde do seu filho
             </p>
           </FadeIn>
 
-          {/* Timeline Tabs */}
-          <FadeIn delay={0.1} className="flex overflow-x-auto hide-scrollbar justify-start md:justify-center gap-3 md:gap-4 mb-8 md:mb-12 pb-4 px-4 sm:px-0 -mx-4 sm:mx-0">
-            {timelineData.map((tab, index) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTimeline(index)}
-                className={`flex-shrink-0 flex items-center px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl transition-all duration-300 ${
-                  activeTimeline === index 
-                    ? 'bg-[#A8D0C6] text-white shadow-md transform scale-105' 
-                    : 'bg-[#FDFBF9] text-gray-500 hover:bg-[#A8D0C6]/10 border border-gray-100'
-                }`}
-              >
-                <div className={`mr-3 ${activeTimeline === index ? 'text-white' : 'text-[#A8D0C6]'}`}>
-                  {tab.icon}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch">
+            {/* Coluna 1: Gastropediatria */}
+            <FadeIn delay={0.1} className="space-y-8 flex flex-col">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-lilas/30 rounded-xl flex items-center justify-center text-ametista">
+                  <Stethoscope className="w-6 h-6" />
                 </div>
-                <div className="text-left">
-                  <div className="font-serif font-medium text-base md:text-lg leading-tight">{tab.title}</div>
-                  <div className={`text-xs ${activeTimeline === index ? 'text-white/80' : 'text-gray-400'}`}>{tab.age}</div>
+                <h4 className="font-serif text-2xl font-bold text-[#5A5350]">Gastropediatria</h4>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-lg font-bold text-ametista mb-2">Alergias e Intolerâncias</h5>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Diagnóstico e manejo de APLV (Alergia à Proteína do Leite de Vaca), Alergias Alimentares e Intolerâncias.
+                  </p>
                 </div>
-              </button>
-            ))}
+
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-lg font-bold text-ametista mb-2">Distúrbios Digestivos Comuns</h5>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Tratamento de Refluxo Gastroesofágico, Gastrite, Vômitos, Constipação Intestinal e Diarreia.
+                  </p>
+                </div>
+
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-lg font-bold text-ametista mb-2">Saúde Abdominal e Intestinal</h5>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Dor Abdominal, Sangramentos Intestinais, Doenças Inflamatórias Intestinais, Doença Celíaca, Má-absorção intestinal e baixo ganho de peso.
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Coluna 2: Pediatria */}
+            <FadeIn delay={0.2} className="space-y-8 flex flex-col">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-verde-agua/20 rounded-xl flex items-center justify-center text-verde-agua">
+                  <Baby className="w-6 h-6" />
+                </div>
+                <h4 className="font-serif text-2xl font-bold text-[#5A5350]">Pediatria Geral</h4>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-lg font-bold text-verde-agua mb-2">Puericultura</h5>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Acompanhamento integral do crescimento e desenvolvimento, do nascimento à adolescência.
+                  </p>
+                </div>
+
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-lg font-bold text-verde-agua mb-2">Urgências Pediátricas</h5>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Atendimento resolutivo para síndromes febris, afecções respiratórias, intestinais e dermatológicas.
+                  </p>
+                </div>
+
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-lg font-bold text-verde-agua mb-2">Introdução Alimentar Guiada</h5>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Um guia prático e seguro para o início da alimentação sólida, respeitando o tempo, a prontidão e as necessidades individuais do seu bebê.
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Coluna Foto */}
+            <FadeIn delay={0.3} className="hidden lg:flex items-center justify-center">
+              <div className="relative w-full max-w-md">
+                <div className="absolute -inset-4 bg-lilas/20 rounded-[40px] transform rotate-3"></div>
+                <img 
+                  src="https://raw.githubusercontent.com/patriciapereiracarvalhokids-ctrl/fotos/main/IMG_2247.PNG" 
+                  alt="Dra. Patricia Carvalho" 
+                  className="relative rounded-[30px] shadow-xl w-full aspect-[4/5] object-cover object-top border-4 border-white"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-dourado/20 rounded-full blur-2xl"></div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+
+
+
+      {/* --- Diferenciais Section --- */}
+      <section id="consulta" className="py-20 bg-white relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <FadeIn className="text-center mb-16">
+            <h2 className="text-sm font-semibold text-verde-agua tracking-widest uppercase mb-3">Diferenciais</h2>
+            <h3 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">
+              Uma experiência de cuidado com<br />olhar atento e sem pressa
+            </h3>
+            <div className="w-16 h-1 bg-dourado mx-auto rounded-full mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Entendo que cada criança é única. Por isso, analiso cada detalhe da história do seu filho em momentos essenciais:
+            </p>
           </FadeIn>
 
-          {/* Timeline Content */}
-          <FadeIn delay={0.2} className="bg-[#FDFBF9] rounded-2xl md:rounded-3xl p-6 md:p-12 border border-gray-100 shadow-sm relative overflow-hidden">
-            {/* Decorative element */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#A8D0C6]/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
-              {/* Marcos */}
-              <div>
-                <div className="flex items-center mb-6">
-                  <div className="w-10 h-10 rounded-full bg-[#EAD5D1]/30 flex items-center justify-center text-[#5A5350] mr-4">
-                    <Baby className="w-5 h-5" />
-                  </div>
-                  <h4 className="font-serif text-xl font-medium text-[#5A5350]">Marcos Esperados</h4>
-                </div>
-                <ul className="space-y-4">
-                  {timelineData[activeTimeline].milestones.map((item, i) => (
-                    <li key={i} className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-[#A8D0C6] mr-3 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-600">{item}</span>
-                    </li>
-                  ))}
-                </ul>
+          <div className="flex flex-col lg:flex-row gap-12 items-stretch">
+            {/* Coluna Foto */}
+            <FadeIn delay={0.1} className="w-full lg:w-1/2">
+              <div className="relative h-full">
+                <div className="absolute -inset-4 bg-verde-agua/10 rounded-[40px] transform -rotate-3"></div>
+                <img 
+                  src="https://raw.githubusercontent.com/patriciapereiracarvalhokids-ctrl/fotos/main/IMG_2246.PNG" 
+                  alt="Atendimento Pediatria" 
+                  className="relative rounded-[30px] shadow-lg w-full h-full object-cover border-4 border-white"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute top-1/2 -left-8 w-16 h-16 bg-lilas/30 rounded-full blur-xl"></div>
               </div>
+            </FadeIn>
 
-              {/* Consultas */}
-              <div>
-                <div className="flex items-center mb-6">
-                  <div className="w-10 h-10 rounded-full bg-[#A8D0C6]/20 flex items-center justify-center text-[#A8D0C6] mr-4">
-                    <Stethoscope className="w-5 h-5" />
-                  </div>
-                  <h4 className="font-serif text-xl font-medium text-[#5A5350]">Consultas</h4>
+            {/* Coluna Blocos */}
+            <div className="w-full lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FadeIn delay={0.2} className="bg-seda p-8 rounded-3xl border border-gray-100 hover:shadow-md transition-all group">
+                <div className="w-12 h-12 bg-verde-agua/20 rounded-2xl flex items-center justify-center text-verde-agua mb-6 group-hover:bg-verde-agua group-hover:text-white transition-colors">
+                  <MessageCircle className="w-6 h-6" />
                 </div>
-                <ul className="space-y-4">
-                  {timelineData[activeTimeline].consultations.map((item, i) => (
-                    <li key={i} className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-[#A8D0C6] mr-3 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-600">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Acolhimento e Escuta</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Foco total na queixa atual e preocupações da família.
+                </p>
+              </FadeIn>
 
-              {/* Vacinas */}
-              <div>
-                <div className="flex items-center mb-6">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-400 mr-4">
-                    <Shield className="w-5 h-5" />
-                  </div>
-                  <h4 className="font-serif text-xl font-medium text-[#5A5350]">Vacinas</h4>
+              <FadeIn delay={0.3} className="bg-seda p-8 rounded-3xl border border-gray-100 hover:shadow-md transition-all group">
+                <div className="w-12 h-12 bg-lilas/40 rounded-2xl flex items-center justify-center text-ametista mb-6 group-hover:bg-ametista group-hover:text-white transition-colors">
+                  <Clock className="w-6 h-6" />
                 </div>
-                <ul className="space-y-4">
-                  {timelineData[activeTimeline].vaccines.map((item, i) => (
-                    <li key={i} className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-600">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Análise do Cotidiano</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Avaliação minuciosa da rotina, alimentação e hábitos.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.4} className="bg-seda p-8 rounded-3xl border border-gray-100 hover:shadow-md transition-all group">
+                <div className="w-12 h-12 bg-verde-agua/20 rounded-2xl flex items-center justify-center text-verde-agua mb-6 group-hover:bg-verde-agua group-hover:text-white transition-colors">
+                  <User className="w-6 h-6" />
+                </div>
+                <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Histórico de Vida e Contexto Familiar</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Análise dos antecedentes, dados de nascimento e histórico de saúde familiar.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.5} className="bg-seda p-8 rounded-3xl border border-gray-100 hover:shadow-md transition-all group">
+                <div className="w-12 h-12 bg-lilas/40 rounded-2xl flex items-center justify-center text-ametista mb-6 group-hover:bg-ametista group-hover:text-white transition-colors">
+                  <Stethoscope className="w-6 h-6" />
+                </div>
+                <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Exame Físico Detalhado</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Avaliação minuciosa da saúde física e crescimento.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.6} className="bg-seda p-8 rounded-3xl border border-gray-100 hover:shadow-md transition-all group">
+                <div className="w-12 h-12 bg-verde-agua/20 rounded-2xl flex items-center justify-center text-verde-agua mb-6 group-hover:bg-verde-agua group-hover:text-white transition-colors">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Raciocínio Diagnóstico</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Elaboração baseada nas evidências coletadas.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.7} className="bg-seda p-8 rounded-3xl border border-gray-100 hover:shadow-md transition-all group">
+                <div className="w-12 h-12 bg-lilas/40 rounded-2xl flex items-center justify-center text-ametista mb-6 group-hover:bg-ametista group-hover:text-white transition-colors">
+                  <Heart className="w-6 h-6" />
+                </div>
+                <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Plano Terapêutico</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Definição conjunta das estratégias de tratamento.
+                </p>
+              </FadeIn>
             </div>
-          </FadeIn>
+          </div>
         </div>
       </section>
 
       {/* --- Depoimentos Section --- */}
-      <section className="py-20 bg-[#EAD5D1]/20">
+      <section className="py-20 bg-lilas/20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn className="text-center mb-16">
             <h2 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Depoimentos</h2>
-            <div className="w-16 h-1 bg-[#A8D0C6] mx-auto rounded-full"></div>
+            <div className="w-16 h-1 bg-verde-agua mx-auto rounded-full"></div>
             <p className="mt-4 text-gray-600">O que as famílias dizem sobre o nosso cuidado.</p>
           </FadeIn>
 
@@ -540,305 +528,15 @@ export default function App() {
         </div>
       </section>
 
-      {/* --- A Consulta Section --- */}
-      <section id="consulta" className="py-20 bg-white relative">
-        <div className="absolute top-1/2 right-5 text-4xl animate-float-fast opacity-50">🧩</div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <FadeIn className="flex flex-col lg:flex-row rounded-[40px] overflow-hidden shadow-lg">
-            {/* Imagem */}
-            <div className="w-full lg:w-1/2 relative min-h-[400px]">
-              <img 
-                src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/IMG_2251.PNG?raw=true" 
-                alt="Dra. Patricia Carvalho em consulta" 
-                className="absolute inset-0 w-full h-full object-cover object-top"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-                <h3 className="text-white font-serif text-3xl font-medium">Acompanhamento completo</h3>
-              </div>
-            </div>
 
-            {/* Conteúdo */}
-            <div className="w-full lg:w-1/2 bg-[#A8D0C6] p-10 lg:p-16 text-white">
-              <h2 className="font-serif text-2xl md:text-3xl font-medium mb-6">
-                Minha consulta é dividida em momentos importantes para a saúde do seu filho!
-              </h2>
-              <p className="mb-8 text-white/90 leading-relaxed text-left sm:text-justify">
-                Eu me preocupo em entender cada detalhe para oferecer o melhor cuidado possível, sem pressa.
-              </p>
 
-              <ul className="space-y-4 mb-10">
-                <li className="flex items-start">
-                  <span className="font-serif font-bold text-xl mr-4 opacity-80">1.</span>
-                  <span>Foco na queixa atual do paciente;</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="font-serif font-bold text-xl mr-4 opacity-80">2.</span>
-                  <span>Análise dos antecedentes pessoais da criança;</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="font-serif font-bold text-xl mr-4 opacity-80">3.</span>
-                  <span>Avaliação de rotina e alimentação atuais;</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="font-serif font-bold text-xl mr-4 opacity-80">4.</span>
-                  <span>Avaliação minuciosa do desenvolvimento;</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="font-serif font-bold text-xl mr-4 opacity-80">5.</span>
-                  <span>Elaboração das possibilidades diagnósticas;</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="font-serif font-bold text-xl mr-4 opacity-80">6.</span>
-                  <span>Estratégia de tratamento e orientações.</span>
-                </li>
-              </ul>
-
-              <a 
-                href="#anamnese"
-                className="inline-block bg-white text-[#A8D0C6] font-medium px-8 py-3 rounded-full hover:bg-gray-50 transition-colors shadow-sm"
-              >
-                Agende uma consulta
-              </a>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* --- Anamnese / Formulário Section --- */}
-      <section id="anamnese" className="py-20 bg-[#EAD5D1]/20 relative">
-        <div className="absolute top-10 left-10 text-4xl animate-float opacity-50">📝</div>
-        <div className="absolute bottom-10 right-10 text-3xl animate-float-slow opacity-50">✨</div>
-        
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <FadeIn className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Agendamento & Pré-Consulta</h2>
-            <div className="w-16 h-1 bg-[#A8D0C6] mx-auto rounded-full mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto text-left sm:text-justify">
-              Escolha a data e horário de sua preferência e preencha os dados abaixo para agilizar o seu atendimento. As informações serão enviadas diretamente para o nosso WhatsApp para finalizarmos o seu agendamento.
-            </p>
-          </FadeIn>
-
-          <FadeIn delay={0.2}>
-            <form onSubmit={handleFormSubmit} className="bg-white p-8 md:p-10 rounded-[30px] shadow-sm border border-gray-100">
-              
-              {/* Seção 1: Data e Horário */}
-              <div className="mb-10">
-              <h3 className="flex items-center text-xl font-serif font-medium text-[#5A5350] mb-4 pb-2 border-b border-gray-100">
-                <Calendar className="w-5 h-5 mr-2 text-[#A8D0C6]" />
-                1. Sugira até 3 opções de Data e Horário
-              </h3>
-              
-              {/* Box de Informação sobre Confirmação */}
-              <div className="bg-[#A8D0C6]/10 border border-[#A8D0C6]/30 rounded-2xl p-4 mb-6 flex items-start">
-                <Info className="w-5 h-5 text-[#A8D0C6] mt-0.5 mr-3 flex-shrink-0" />
-                <div>
-                  <h4 className="text-sm font-medium text-[#5A5350] mb-1">Como funciona a confirmação?</h4>
-                  <p className="text-sm text-gray-600 leading-relaxed text-left sm:text-justify">
-                    Para agilizar seu atendimento, pedimos que sugira até 3 opções. Nossa equipe receberá sua solicitação e <strong>confirmará a data mais próxima disponível</strong> entre as suas escolhas através do WhatsApp. Caso nenhuma das opções esteja livre, sugeriremos o horário mais próximo possível.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                {/* Opção 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-[#FDFBF9] rounded-2xl border border-[#EAD5D1]/50">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">1ª Opção de Data *</label>
-                    <input 
-                      type="date" name="data1" required min={new Date().toISOString().split('T')[0]}
-                      value={formData.data1} onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all text-gray-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">1ª Opção de Horário *</label>
-                    <select 
-                      name="horario1" required disabled={!formData.data1 || getAvailableTimes(formData.data1).length === 0}
-                      value={formData.horario1} onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all text-gray-600 disabled:bg-gray-50 disabled:text-gray-400"
-                    >
-                      <option value="">Selecione um horário</option>
-                      {getAvailableTimes(formData.data1).map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                    {formData.data1 && getAvailableTimes(formData.data1).length === 0 && (
-                      <p className="text-xs text-red-500 mt-2">Não há atendimento nesta data (Domingo).</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Opção 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-[#FDFBF9] rounded-2xl border border-[#EAD5D1]/50">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">2ª Opção de Data (Opcional)</label>
-                    <input 
-                      type="date" name="data2" min={new Date().toISOString().split('T')[0]}
-                      value={formData.data2} onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all text-gray-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">2ª Opção de Horário</label>
-                    <select 
-                      name="horario2" required={!!formData.data2} disabled={!formData.data2 || getAvailableTimes(formData.data2).length === 0}
-                      value={formData.horario2} onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all text-gray-600 disabled:bg-gray-50 disabled:text-gray-400"
-                    >
-                      <option value="">Selecione um horário</option>
-                      {getAvailableTimes(formData.data2).map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                    {formData.data2 && getAvailableTimes(formData.data2).length === 0 && (
-                      <p className="text-xs text-red-500 mt-2">Não há atendimento nesta data (Domingo).</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Opção 3 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-[#FDFBF9] rounded-2xl border border-[#EAD5D1]/50">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">3ª Opção de Data (Opcional)</label>
-                    <input 
-                      type="date" name="data3" min={new Date().toISOString().split('T')[0]}
-                      value={formData.data3} onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all text-gray-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">3ª Opção de Horário</label>
-                    <select 
-                      name="horario3" required={!!formData.data3} disabled={!formData.data3 || getAvailableTimes(formData.data3).length === 0}
-                      value={formData.horario3} onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all text-gray-600 disabled:bg-gray-50 disabled:text-gray-400"
-                    >
-                      <option value="">Selecione um horário</option>
-                      {getAvailableTimes(formData.data3).map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                    {formData.data3 && getAvailableTimes(formData.data3).length === 0 && (
-                      <p className="text-xs text-red-500 mt-2">Não há atendimento nesta data (Domingo).</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Seção 2: Dados do Paciente */}
-            <div>
-              <h3 className="flex items-center text-xl font-serif font-medium text-[#5A5350] mb-6 pb-2 border-b border-gray-100">
-                <FileText className="w-5 h-5 mr-2 text-[#A8D0C6]" />
-                2. Dados do Paciente
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Nome do Responsável */}
-                <div className="col-span-1 md:col-span-2">
-                  <label htmlFor="responsavel" className="block text-sm font-medium text-gray-700 mb-2">Nome do Responsável *</label>
-                  <input 
-                    type="text" 
-                    id="responsavel" 
-                    name="responsavel" 
-                    required
-                    value={formData.responsavel}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all"
-                    placeholder="Seu nome completo"
-                  />
-                </div>
-
-                {/* Nome da Criança */}
-                <div>
-                  <label htmlFor="crianca" className="block text-sm font-medium text-gray-700 mb-2">Nome da Criança *</label>
-                  <input 
-                    type="text" 
-                    id="crianca" 
-                    name="crianca" 
-                    required
-                    value={formData.crianca}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all"
-                    placeholder="Nome do paciente"
-                  />
-                </div>
-
-                {/* Data de Nascimento */}
-                <div>
-                  <label htmlFor="nascimento" className="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento *</label>
-                  <input 
-                    type="date" 
-                    id="nascimento" 
-                    name="nascimento" 
-                    required
-                    value={formData.nascimento}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all text-gray-600"
-                  />
-                </div>
-
-                {/* Motivo da Consulta */}
-                <div className="col-span-1 md:col-span-2">
-                  <label htmlFor="motivo" className="block text-sm font-medium text-gray-700 mb-2">Motivo da Consulta *</label>
-                  <textarea 
-                    id="motivo" 
-                    name="motivo" 
-                    required
-                    rows={3}
-                    value={formData.motivo}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all resize-none"
-                    placeholder="Descreva brevemente o motivo da consulta (ex: rotina, dor de barriga, febre...)"
-                  ></textarea>
-                </div>
-
-                {/* Alergias */}
-                <div>
-                  <label htmlFor="alergias" className="block text-sm font-medium text-gray-700 mb-2">Alergias (Opcional)</label>
-                  <input 
-                    type="text" 
-                    id="alergias" 
-                    name="alergias" 
-                    value={formData.alergias}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all"
-                    placeholder="Ex: Leite, Dipirona..."
-                  />
-                </div>
-
-                {/* Medicamentos */}
-                <div>
-                  <label htmlFor="medicamentos" className="block text-sm font-medium text-gray-700 mb-2">Medicamentos em uso (Opcional)</label>
-                  <input 
-                    type="text" 
-                    id="medicamentos" 
-                    name="medicamentos" 
-                    value={formData.medicamentos}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A8D0C6] focus:border-transparent outline-none transition-all"
-                    placeholder="Ex: Vitamina D, Paracetamol..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-10 pt-6 border-t border-gray-100">
-              <button 
-                type="submit"
-                className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-medium py-4 rounded-xl transition-colors shadow-md text-lg"
-              >
-                <MessageCircle className="w-6 h-6" />
-                Confirmar Agendamento via WhatsApp
-              </button>
-            </div>
-          </form>
-          </FadeIn>
-        </div>
-      </section>
 
       {/* --- Localização Section --- */}
-      <section id="localizacao" className="py-20 bg-[#FDFBF9] bg-polka relative">
-        <div className="absolute top-20 left-20 text-4xl animate-float opacity-60">📍</div>
+      <section id="localizacao" className="py-20 bg-seda bg-polka relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <FadeIn className="text-center mb-16">
-            <h2 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Atendimento Presencial</h2>
-            <div className="w-16 h-1 bg-[#A8D0C6] mx-auto rounded-full"></div>
+            <h2 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Atendimento</h2>
+            <div className="w-16 h-1 bg-verde-agua mx-auto rounded-full"></div>
           </FadeIn>
 
           <div className="flex flex-col md:flex-row gap-12 items-center">
@@ -859,21 +557,21 @@ export default function App() {
             {/* Informações */}
             <FadeIn delay={0.4} className="w-full md:w-1/2 space-y-8 bg-white p-8 rounded-[30px] shadow-sm border border-gray-100">
               <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1 bg-[#A8D0C6]/20 p-3 rounded-full">
-                  <MapPin className="w-6 h-6 text-[#A8D0C6]" />
+                <div className="flex-shrink-0 mt-1 bg-verde-agua/20 p-3 rounded-full">
+                  <MapPin className="w-6 h-6 text-verde-agua" />
                 </div>
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-[#5A5350]">Endereço</h3>
                   <p className="mt-1 text-gray-600 leading-relaxed">
-                    Folha 16, Quadra 01, Lote 14 A<br />
-                    Bairro Nova Marabá<br />
-                    Marabá - PA, CEP: 68511-000
+                    Av. Itacaiúnas, 1730<br />
+                    Cidade Nova<br />
+                    Marabá - PA
                   </p>
                   <a 
-                    href="https://maps.app.goo.gl/f7oCbssotdMv9kad7" 
+                    href="https://maps.app.goo.gl/kJfJT2VcvQ1pLhoQ9" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-block mt-3 text-sm font-medium text-[#A8D0C6] hover:text-[#95C0B5] underline underline-offset-4"
+                    className="inline-block mt-3 text-sm font-medium text-verde-agua hover:text-verde-agua/80 underline underline-offset-4"
                   >
                     Abrir no Google Maps
                   </a>
@@ -881,25 +579,12 @@ export default function App() {
               </div>
 
               <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1 bg-[#A8D0C6]/20 p-3 rounded-full">
-                  <Phone className="w-6 h-6 text-[#A8D0C6]" />
+                <div className="flex-shrink-0 mt-1 bg-verde-agua/20 p-3 rounded-full">
+                  <Phone className="w-6 h-6 text-verde-agua" />
                 </div>
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-[#5A5350]">Telefone / WhatsApp</h3>
-                  <p className="mt-1 text-gray-600">(94) 981539045</p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1 bg-[#A8D0C6]/20 p-3 rounded-full">
-                  <Clock className="w-6 h-6 text-[#A8D0C6]" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-[#5A5350]">Horário de Atendimento</h3>
-                  <p className="mt-1 text-gray-600">
-                    Segunda a Sexta: 08:00 às 18:00<br />
-                    Atendimento com hora marcada.
-                  </p>
+                  <p className="mt-1 text-gray-600">(94) 992018972</p>
                 </div>
               </div>
             </FadeIn>
@@ -908,42 +593,42 @@ export default function App() {
       </section>
 
       {/* --- Dicas da Pediatra Section (Blog) --- */}
-      <section id="dicas" className="py-20 bg-[#FDFBF9]">
+      <section id="dicas" className="py-20 bg-seda">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn className="text-center mb-16">
-            <h2 className="text-sm font-semibold text-[#A8D0C6] tracking-widest uppercase mb-3">Blog & Informação</h2>
+            <h2 className="text-sm font-semibold text-verde-agua tracking-widest uppercase mb-3">Blog & Informação</h2>
             <h3 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350]">Dicas da Pediatra</h3>
             <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
               Artigos rápidos e orientações práticas para ajudar você a cuidar do seu maior tesouro com mais segurança e tranquilidade.
             </p>
           </FadeIn>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Card 1 */}
             <FadeIn delay={0.1} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
-              <div className="h-56 overflow-hidden relative">
+              <div className="h-48 overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&q=80&w=800" 
-                  alt="Introdução Alimentar" 
+                  src="https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=800" 
+                  alt="APLV vs Intolerância à Lactose" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   referrerPolicy="no-referrer" 
                 />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-[#A8D0C6] shadow-sm">
-                  Nutrição
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-verde-agua shadow-sm">
+                  Alergia Alimentar
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h4 className="font-serif text-xl font-medium text-[#5A5350] mb-3 group-hover:text-[#A8D0C6] transition-colors">
-                  Introdução Alimentar: Por onde começar?
+                <h4 className="font-serif text-lg font-medium text-[#5A5350] mb-3 group-hover:text-verde-agua transition-colors line-clamp-2">
+                  APLV x Intolerância a lactose.
                 </h4>
                 <p className="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow">
-                  O início da introdução alimentar gera muitas dúvidas. Saiba quais os melhores alimentos para os primeiros contatos do bebê e como tornar esse momento prazeroso e sem estresse.
+                  Muitos pais confundem APLV com Intolerância à Lactose, mas são condições bem diferentes.
                 </p>
                 <a 
-                  href="https://instagram.com/patricia.gastroped" 
+                  href="https://www.instagram.com/reel/C_6qcpiykGA/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="inline-flex items-center text-[#A8D0C6] font-medium text-sm hover:text-[#95C0B5] transition-colors mt-auto"
+                  className="inline-flex items-center text-verde-agua font-medium text-sm hover:text-verde-agua/80 transition-colors mt-auto"
                 >
                   Ler no Instagram <ArrowRight className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1 transition-transform" />
                 </a>
@@ -952,29 +637,29 @@ export default function App() {
 
             {/* Card 2 */}
             <FadeIn delay={0.2} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
-              <div className="h-56 overflow-hidden relative">
+              <div className="h-48 overflow-hidden relative">
                 <img 
-                  src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/IMG_2249.PNG?raw=true" 
-                  alt="Dra. Patricia Carvalho" 
-                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" 
+                  src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=800" 
+                  alt="Bebê no peniquinho" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   referrerPolicy="no-referrer" 
                 />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-[#A8D0C6] shadow-sm">
-                  Recém-nascido
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-verde-agua shadow-sm">
+                  Saúde Digestiva
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h4 className="font-serif text-xl font-medium text-[#5A5350] mb-3 group-hover:text-[#A8D0C6] transition-colors">
-                  Mala da Maternidade: O que não pode faltar?
+                <h4 className="font-serif text-lg font-medium text-[#5A5350] mb-3 group-hover:text-verde-agua transition-colors line-clamp-2">
+                  Seu filho sofre com constipação intestinal?
                 </h4>
                 <p className="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow">
-                  Um checklist completo com tudo o que você e seu bebê vão precisar nos primeiros dias na maternidade. Evite exageros e não esqueça o essencial para o conforto de ambos.
+                  A constipação é uma queixa comum, mas que exige atenção. Entenda os sinais e causas.
                 </p>
                 <a 
-                  href="https://instagram.com/patricia.gastroped" 
+                  href="https://www.instagram.com/p/C_iXniNOvcm/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="inline-flex items-center text-[#A8D0C6] font-medium text-sm hover:text-[#95C0B5] transition-colors mt-auto"
+                  className="inline-flex items-center text-verde-agua font-medium text-sm hover:text-verde-agua/80 transition-colors mt-auto"
                 >
                   Ler no Instagram <ArrowRight className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1 transition-transform" />
                 </a>
@@ -983,29 +668,60 @@ export default function App() {
 
             {/* Card 3 */}
             <FadeIn delay={0.3} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
-              <div className="h-56 overflow-hidden relative">
+              <div className="h-48 overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1584362917165-526a968579e8?auto=format&fit=crop&q=80&w=800" 
-                  alt="Febre na criança" 
+                  src="https://images.unsplash.com/photo-1523292562811-8fa7962a78c8?auto=format&fit=crop&q=80&w=800" 
+                  alt="Refluxo no bebê" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   referrerPolicy="no-referrer" 
                 />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-[#A8D0C6] shadow-sm">
-                  Saúde
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-verde-agua shadow-sm">
+                  Gastropediatria
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h4 className="font-serif text-xl font-medium text-[#5A5350] mb-3 group-hover:text-[#A8D0C6] transition-colors">
-                  Febre na criança: Quando devo me preocupar?
+                <h4 className="font-serif text-lg font-medium text-[#5A5350] mb-3 group-hover:text-verde-agua transition-colors line-clamp-2">
+                  Refluxo no bebê, quando me preocupar?
                 </h4>
                 <p className="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow">
-                  A febre é um mecanismo de defesa do corpo, mas sempre assusta os pais. Aprenda a identificar os sinais de alerta e saiba o momento exato de procurar o pronto-socorro.
+                  O refluxo é comum em bebês, mas quando ele deixa de ser fisiológico? Saiba identificar.
                 </p>
                 <a 
-                  href="https://instagram.com/patricia.gastroped" 
+                  href="https://www.instagram.com/p/C_GmqlYy1MP/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="inline-flex items-center text-[#A8D0C6] font-medium text-sm hover:text-[#95C0B5] transition-colors mt-auto"
+                  className="inline-flex items-center text-verde-agua font-medium text-sm hover:text-verde-agua/80 transition-colors mt-auto"
+                >
+                  Ler no Instagram <ArrowRight className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1 transition-transform" />
+                </a>
+              </div>
+            </FadeIn>
+
+            {/* Card 4 */}
+            <FadeIn delay={0.4} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=800" 
+                  alt="Suspeita de APLV" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  referrerPolicy="no-referrer" 
+                />
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-verde-agua shadow-sm">
+                  Alergia Alimentar
+                </div>
+              </div>
+              <div className="p-6 flex flex-col flex-grow">
+                <h4 className="font-serif text-lg font-medium text-[#5A5350] mb-3 group-hover:text-verde-agua transition-colors line-clamp-2">
+                  Será que é APLV?
+                </h4>
+                <p className="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow">
+                  Sintomas gastrointestinais, pele irritada ou choro excessivo? Descubra se esses sinais podem indicar Alergia à Proteína do Leite de Vaca.
+                </p>
+                <a 
+                  href="https://www.instagram.com/reel/C_rmOaANGJR/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center text-verde-agua font-medium text-sm hover:text-verde-agua/80 transition-colors mt-auto"
                 >
                   Ler no Instagram <ArrowRight className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1 transition-transform" />
                 </a>
@@ -1015,10 +731,10 @@ export default function App() {
           
           <FadeIn delay={0.4} className="mt-16 text-center">
             <a 
-              href="https://instagram.com/patricia.gastroped" 
+              href="https://www.instagram.com/dra.patriciapereiracarvalho/" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="inline-flex items-center justify-center px-8 py-3.5 border-2 border-[#A8D0C6] text-base font-medium rounded-full text-[#A8D0C6] hover:bg-[#A8D0C6] hover:text-white transition-colors shadow-sm"
+              className="inline-flex items-center justify-center px-8 py-3.5 border-2 border-verde-agua text-base font-medium rounded-full text-verde-agua hover:bg-verde-agua hover:text-white transition-colors shadow-sm"
             >
               <Instagram className="w-5 h-5 mr-2" />
               Acompanhe mais dicas no Instagram
@@ -1032,7 +748,7 @@ export default function App() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn className="text-center mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Perguntas Frequentes</h2>
-            <div className="w-16 h-1 bg-[#A8D0C6] mx-auto rounded-full"></div>
+            <div className="w-16 h-1 bg-verde-agua mx-auto rounded-full"></div>
           </FadeIn>
 
           <FadeIn delay={0.2} className="space-y-4">
@@ -1040,7 +756,7 @@ export default function App() {
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               <button 
                 onClick={() => toggleFaq(0)}
-                className="w-full px-6 py-4 text-left flex justify-between items-center bg-[#FDFBF9] hover:bg-gray-50 transition-colors"
+                className="w-full px-6 py-4 text-left flex justify-between items-center bg-seda hover:bg-gray-50 transition-colors"
               >
                 <span className="font-medium text-[#5A5350]">Qual a duração da consulta?</span>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${openFaq === 0 ? 'rotate-180' : ''}`} />
@@ -1058,12 +774,53 @@ export default function App() {
                 onClick={() => toggleFaq(1)}
                 className="w-full px-6 py-4 text-left flex justify-between items-center bg-[#FDFBF9] hover:bg-gray-50 transition-colors"
               >
-                <span className="font-medium text-[#5A5350]">O atendimento é só particular?</span>
+                <span className="font-medium text-[#5A5350]">Atende convênio?</span>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${openFaq === 1 ? 'rotate-180' : ''}`} />
               </button>
               {openFaq === 1 && (
-                <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-left sm:text-justify">
-                  Sim, no momento realizo apenas atendimentos particulares para garantir o tempo e a qualidade de atenção que cada paciente merece. Fornecemos recibo para solicitação de reembolso junto ao seu plano de saúde.
+                <div className="px-6 py-6 bg-white text-gray-600 border-t border-gray-100">
+                  <p className="mb-4">Aceito os planos abaixo e também atendimentos particulares:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-center">
+                    <div className="flex flex-col items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="w-16 h-12 flex items-center justify-center mb-2">
+                        <img 
+                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Vale_logo.svg/2560px-Vale_logo.svg.png" 
+                          alt="Vale" 
+                          className="max-w-full max-h-full object-contain"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-[#5A5350]">Vale</span>
+                    </div>
+                    <div className="flex flex-col items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="w-16 h-12 flex items-center justify-center mb-2">
+                        <img 
+                          src="https://suldoparasaude.com.br/wp-content/uploads/2021/08/logo-sul-do-para-saude.png" 
+                          alt="Sul do Pará Saúde" 
+                          className="max-w-full max-h-full object-contain"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-[#5A5350]">Sul do Pará</span>
+                    </div>
+                    <div className="flex flex-col items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="w-16 h-12 flex items-center justify-center mb-2">
+                        <img 
+                          src="https://salutebeneficios.com.br/wp-content/uploads/2022/07/logo-salute-beneficios.png" 
+                          alt="Salute Benefícios" 
+                          className="max-w-full max-h-full object-contain"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-[#5A5350]">Salute</span>
+                    </div>
+                    <div className="flex flex-col items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mb-2">
+                        <User className="w-6 h-6 text-gray-500" />
+                      </div>
+                      <span className="text-xs font-semibold text-[#5A5350]">Particular</span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -1074,12 +831,34 @@ export default function App() {
                 onClick={() => toggleFaq(2)}
                 className="w-full px-6 py-4 text-left flex justify-between items-center bg-[#FDFBF9] hover:bg-gray-50 transition-colors"
               >
-                <span className="font-medium text-[#5A5350]">Qual a idade para consulta com gastropediatra?</span>
+                <span className="font-medium text-[#5A5350]">Qual a faixa etária atendida?</span>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${openFaq === 2 ? 'rotate-180' : ''}`} />
               </button>
               {openFaq === 2 && (
                 <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-left sm:text-justify">
-                  Atendo desde recém-nascidos até adolescentes (18 anos) que apresentem sintomas relacionados ao aparelho digestivo, como refluxo, cólicas intensas, dificuldade alimentar, constipação ou diarreia crônica.
+                  Atendimento especializado para crianças e adolescentes de 0 a 14 anos.
+                </div>
+              )}
+            </div>
+
+            {/* FAQ Item 4 */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <button 
+                onClick={() => toggleFaq(3)}
+                className="w-full px-6 py-4 text-left flex justify-between items-center bg-[#FDFBF9] hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-[#5A5350]">O que levar para a consulta?</span>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${openFaq === 3 ? 'rotate-180' : ''}`} />
+              </button>
+              {openFaq === 3 && (
+                <div className="px-6 py-4 bg-white text-gray-600 border-t border-gray-100 text-left sm:text-justify">
+                  Para uma avaliação completa, é importante trazer:
+                  <ul className="list-disc ml-5 mt-2 space-y-1">
+                    <li>Caderneta da criança;</li>
+                    <li>Dados do nascimento e Teste do Pezinho;</li>
+                    <li>Fotos e vídeos que você considere relevantes (ex: comportamento, sintomas);</li>
+                    <li>Lista de medicações ou vitaminas em uso atual.</li>
+                  </ul>
                 </div>
               )}
             </div>
@@ -1088,7 +867,7 @@ export default function App() {
       </section>
 
       {/* --- Footer --- */}
-      <footer className="bg-[#EAD5D1]/30 pt-20 pb-12 relative overflow-hidden mt-10">
+      <footer className="bg-lilas/30 pt-20 pb-12 relative overflow-hidden mt-10">
         {/* Wave SVG */}
         <div className="absolute top-0 left-0 w-full overflow-hidden leading-none">
           <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[40px] md:h-[60px]">
@@ -1096,29 +875,22 @@ export default function App() {
           </svg>
         </div>
 
-        {/* Elementos Flutuantes no Footer */}
-        <div className="absolute top-20 right-10 text-3xl animate-float opacity-40">🌙</div>
-        <div className="absolute bottom-20 left-10 text-2xl animate-float-slow opacity-40">⭐</div>
-
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             {/* Coluna 1: Sobre */}
             <div className="col-span-1 lg:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-              <img src="https://github.com/patriciapereiracarvalhokids-ctrl/logo/blob/main/logo%20compactada.png?raw=true" alt="Dra. Patricia Carvalho" className="h-24 md:h-32 w-auto object-contain mb-6" referrerPolicy="no-referrer" />
-              <p className="text-gray-600 text-sm leading-relaxed mb-4 text-left sm:text-justify">
-                Cuidando da saúde e do bem-estar do seu maior tesouro com amor, dedicação e ciência.
-              </p>
-              <p className="text-[#A8D0C6] font-medium text-sm">CRM-PA 11040 | RQE 9798</p>
+              <div className="h-32 md:h-40 w-auto mb-6">
+                <Logo />
+              </div>
             </div>
 
             {/* Coluna 2: Links Rápidos */}
             <div>
               <h3 className="font-serif text-lg font-medium text-[#5A5350] mb-4">Links Rápidos</h3>
               <ul className="space-y-3">
-                <li><a href="#sobre" className="text-gray-600 hover:text-[#A8D0C6] text-sm transition-colors">Sobre mim</a></li>
-                <li><a href="#servicos" className="text-gray-600 hover:text-[#A8D0C6] text-sm transition-colors">Serviços</a></li>
-                <li><a href="#consulta" className="text-gray-600 hover:text-[#A8D0C6] text-sm transition-colors">A Consulta</a></li>
-                <li><a href="#anamnese" className="text-gray-600 hover:text-[#A8D0C6] text-sm transition-colors">Pré-Consulta</a></li>
+                <li><a href="#sobre" className="text-gray-600 hover:text-verde-agua text-sm transition-colors">Sobre mim</a></li>
+                <li><a href="#servicos" className="text-gray-600 hover:text-verde-agua text-sm transition-colors">Serviços</a></li>
+                <li><a href="#consulta" className="text-gray-600 hover:text-verde-agua text-sm transition-colors">A Consulta</a></li>
               </ul>
             </div>
 
@@ -1127,56 +899,55 @@ export default function App() {
               <h3 className="font-serif text-lg font-medium text-[#5A5350] mb-4">Contato</h3>
               <ul className="space-y-3">
                 <li className="flex items-start text-sm text-gray-600">
-                  <MapPin className="w-4 h-4 text-[#A8D0C6] mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Folha 16, Quadra 01, Lote 14 A<br/>Nova Marabá, Marabá - PA</span>
+                  <MapPin className="w-4 h-4 text-verde-agua mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Av. Itacaiúnas, 1730<br/>Cidade Nova, Marabá - PA</span>
                 </li>
                 <li className="flex items-center text-sm text-gray-600">
-                  <Phone className="w-4 h-4 text-[#A8D0C6] mr-2 flex-shrink-0" />
-                  <span>(94) 981539045</span>
+                  <Phone className="w-4 h-4 text-verde-agua mr-2 flex-shrink-0" />
+                  <span>(94) 992018972</span>
                 </li>
                 <li className="flex items-center text-sm text-gray-600">
-                  <Instagram className="w-4 h-4 text-[#A8D0C6] mr-2 flex-shrink-0" />
-                  <a href="https://instagram.com/patricia.gastroped" target="_blank" rel="noopener noreferrer" className="hover:text-[#A8D0C6] transition-colors">
-                    @patricia.gastroped
+                  <Instagram className="w-4 h-4 text-dourado mr-2 flex-shrink-0" />
+                  <a href="https://www.instagram.com/dra.patriciapereiracarvalho/" target="_blank" rel="noopener noreferrer" className="hover:text-dourado transition-colors">
+                    @dra.patriciapereiracarvalho
                   </a>
-                </li>
-                <li className="flex items-start text-sm text-gray-600">
-                  <Clock className="w-4 h-4 text-[#A8D0C6] mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Seg a Sex: 08:00 às 18:00</span>
                 </li>
               </ul>
             </div>
 
-            {/* Coluna 4: Redes Sociais & Urgência */}
+            {/* Coluna 4: Redes Sociais */}
             <div>
               <h3 className="font-serif text-lg font-medium text-[#5A5350] mb-4">Conecte-se</h3>
               <div className="flex space-x-4 mb-6">
-                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#A8D0C6] hover:bg-[#A8D0C6] hover:text-white transition-all shadow-sm">
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-verde-agua hover:bg-verde-agua hover:text-white transition-all shadow-sm">
                   <MessageCircle className="w-5 h-5" />
                 </a>
-                <a href="https://instagram.com/patricia.gastroped" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#A8D0C6] hover:bg-[#A8D0C6] hover:text-white transition-all shadow-sm">
-                  <Instagram className="w-5 h-5" />
+                <a href="https://www.instagram.com/dra.patriciapereiracarvalho/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm overflow-hidden group">
+                  <div className="w-full h-full flex items-center justify-center bg-dourado text-white transition-transform group-hover:scale-110">
+                    <Instagram className="w-5 h-5" />
+                  </div>
                 </a>
               </div>
-              <a 
-                href={urgenciaLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-[#FF9B9B] hover:bg-[#FF8282] transition-colors shadow-sm w-full"
-              >
-                <AlertCircle className="w-4 h-4 mr-2" />
-                Plantão / Urgência
-              </a>
             </div>
           </FadeIn>
           
-          <div className="border-t border-[#D1AFA6]/30 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 text-sm text-center md:text-left mb-4 md:mb-0">
-              &copy; {new Date().getFullYear()} Dra. Patricia Pereira Carvalho. Todos os direitos reservados.
-            </p>
-            <p className="text-gray-500 text-sm flex items-center">
-              Feito com <Heart className="w-4 h-4 text-[#FF9B9B] mx-1 fill-current" /> para o seu bebê
-            </p>
+          <div className="border-t border-[#D1AFA6]/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex flex-col items-center md:items-start">
+              <p className="text-gray-600 text-sm font-medium mb-1">
+                Cuidado especializado e humanizado em saúde digestiva e pediatria.
+              </p>
+              <p className="text-dourado font-bold text-xs tracking-wider uppercase">
+                CRM-PA 11040 | RQE 9802
+              </p>
+            </div>
+            <div className="flex flex-col items-center md:items-end">
+              <p className="text-gray-500 text-xs text-center md:text-right">
+                &copy; {new Date().getFullYear()} Dra. Patricia Pereira Carvalho. Todos os direitos reservados.
+              </p>
+              <p className="text-gray-400 text-[10px] flex items-center mt-1">
+                Feito com <Heart className="w-3 h-3 text-[#FF9B9B] mx-1 fill-current" /> para o seu bebê
+              </p>
+            </div>
           </div>
         </div>
       </footer>
@@ -1186,7 +957,7 @@ export default function App() {
         {/* Chat Popover */}
         {isChatOpen && (
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 w-[calc(100vw-2rem)] md:w-80 overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300 origin-bottom-right pointer-events-auto">
-            <div className="bg-[#25D366] p-4 flex justify-between items-center text-white">
+            <div className="bg-verde-agua p-4 flex justify-between items-center text-white">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                   <Stethoscope className="w-5 h-5" />
@@ -1214,7 +985,7 @@ export default function App() {
                   required
                   value={chatData.nome}
                   onChange={(e) => setChatData({...chatData, nome: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#25D366]/20 focus:border-[#25D366] outline-none transition-all"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-verde-agua/20 focus:border-verde-agua outline-none transition-all"
                   placeholder="Como podemos te chamar?"
                 />
               </div>
@@ -1225,7 +996,7 @@ export default function App() {
                   required
                   value={chatData.assunto}
                   onChange={(e) => setChatData({...chatData, assunto: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#25D366]/20 focus:border-[#25D366] outline-none transition-all bg-white"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-verde-agua/20 focus:border-verde-agua outline-none transition-all bg-white"
                 >
                   <option value="" disabled>Selecione o assunto</option>
                   <option value="Agendar Consulta">Agendar Consulta</option>
@@ -1237,7 +1008,7 @@ export default function App() {
               
               <button 
                 type="submit"
-                className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-medium text-sm py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2"
+                className="w-full bg-dourado hover:bg-dourado/90 text-white font-medium text-sm py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2"
               >
                 <Send className="w-4 h-4" />
                 Iniciar Conversa
@@ -1258,7 +1029,7 @@ export default function App() {
         
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className={`group flex items-center gap-3 text-white p-3.5 md:px-6 md:py-3.5 rounded-full shadow-[0_8px_30px_rgba(37,211,102,0.3)] transition-all duration-300 pointer-events-auto ${isChatOpen ? 'bg-gray-800 hover:bg-gray-700 shadow-gray-800/30' : 'bg-[#25D366] hover:bg-[#20bd5a] hover:-translate-y-1'}`}
+          className={`group flex items-center gap-3 text-white p-3.5 md:px-6 md:py-3.5 rounded-full shadow-[0_8px_30px_rgba(134,185,176,0.3)] transition-all duration-300 pointer-events-auto ${isChatOpen ? 'bg-gray-800 hover:bg-gray-700 shadow-gray-800/30' : 'bg-verde-agua hover:bg-verde-agua/90 hover:-translate-y-1'}`}
           aria-label="Fale conosco no WhatsApp"
         >
           <div className="relative flex items-center justify-center">
@@ -1274,25 +1045,30 @@ export default function App() {
       {/* --- Bottom Navigation (Mobile) --- */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="flex justify-around items-end h-16 px-2 pb-2">
-          <a href="#" className="flex flex-col items-center justify-center w-full text-gray-400 hover:text-[#A8D0C6] active:text-[#A8D0C6] transition-colors">
+          <a href="#" className="flex flex-col items-center justify-center w-full text-gray-400 hover:text-verde-agua active:text-verde-agua transition-colors">
             <Home className="w-[22px] h-[22px] mb-1" />
             <span className="text-[11px] font-medium">Início</span>
           </a>
-          <a href="#servicos" className="flex flex-col items-center justify-center w-full text-gray-400 hover:text-[#A8D0C6] active:text-[#A8D0C6] transition-colors">
+          <a href="#servicos" className="flex flex-col items-center justify-center w-full text-gray-400 hover:text-verde-agua active:text-verde-agua transition-colors">
             <Stethoscope className="w-[22px] h-[22px] mb-1" />
             <span className="text-[11px] font-medium">Serviços</span>
           </a>
-          <a href="#anamnese" className="flex flex-col items-center justify-center w-full relative -top-5">
-            <div className="bg-[#A8D0C6] text-white p-4 rounded-full shadow-lg border-4 border-white flex items-center justify-center transform transition-transform active:scale-95">
-              <FileText className="w-6 h-6" />
+          <a 
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center justify-center w-full relative -top-5"
+          >
+            <div className="bg-verde-agua text-white p-4 rounded-full shadow-lg border-4 border-white flex items-center justify-center transform transition-transform active:scale-95">
+              <Calendar className="w-6 h-6" />
             </div>
-            <span className="text-[11px] font-medium text-[#A8D0C6] mt-1 font-bold">Agendar</span>
+            <span className="text-[11px] font-medium text-verde-agua mt-1 font-bold">Agendar</span>
           </a>
-          <a href="#sobre" className="flex flex-col items-center justify-center w-full text-gray-400 hover:text-[#A8D0C6] active:text-[#A8D0C6] transition-colors">
+          <a href="#sobre" className="flex flex-col items-center justify-center w-full text-gray-400 hover:text-verde-agua active:text-verde-agua transition-colors">
             <User className="w-[22px] h-[22px] mb-1" />
             <span className="text-[11px] font-medium">Sobre</span>
           </a>
-          <a href="#localizacao" className="flex flex-col items-center justify-center w-full text-gray-400 hover:text-[#A8D0C6] active:text-[#A8D0C6] transition-colors">
+          <a href="#localizacao" className="flex flex-col items-center justify-center w-full text-gray-400 hover:text-verde-agua active:text-verde-agua transition-colors">
             <MapPin className="w-[22px] h-[22px] mb-1" />
             <span className="text-[11px] font-medium">Local</span>
           </a>
