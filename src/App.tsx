@@ -69,26 +69,29 @@ export default function App() {
       {/* --- Navegação --- */}
       <nav className="fixed md:sticky top-0 z-40 w-full pointer-events-none md:pointer-events-auto md:bg-white/95 md:backdrop-blur-xl md:border-b md:border-gray-100 md:shadow-sm transition-all duration-300">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-0 pointer-events-none md:pointer-events-auto">
-          <div className="flex justify-center md:justify-between items-center h-auto md:h-40 py-2 md:py-0">
+          <div className="flex justify-start md:justify-between items-center h-auto md:h-56 py-2 md:py-0">
             {/* Logo / Nome */}
             <a href="#" className="flex-shrink-0 flex items-center mobile-fade-logo pointer-events-auto">
-              <div className="h-40 sm:h-56 md:h-44 lg:h-48 w-auto">
-                <Logo />
-              </div>
+              <img 
+                src="https://github.com/patriciapereiracarvalhokids-ctrl/fotos/blob/main/Logo%20de%20Patr%C3%ADcia%20Carvalho.png?raw=true" 
+                alt="Logo Dra. Patrícia Carvalho" 
+                className="h-40 md:h-64 w-auto object-contain"
+                referrerPolicy="no-referrer"
+              />
             </a>
 
             {/* Menu Desktop */}
             <div className="hidden md:flex space-x-8">
-              <a href="#sobre" className="text-sm font-medium text-gray-600 hover:text-verde-agua transition-colors">Sobre mim</a>
-              <a href="#servicos" className="text-sm font-medium text-gray-600 hover:text-verde-agua transition-colors">Serviços</a>
-              <a href="#consulta" className="text-sm font-medium text-gray-600 hover:text-verde-agua transition-colors">A Consulta</a>
-              <a href="#localizacao" className="text-sm font-medium text-gray-600 hover:text-verde-agua transition-colors">Localização</a>
+              <a href="#sobre" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">Sobre mim</a>
+              <a href="#servicos" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">Serviços</a>
+              <a href="#consulta" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">A Consulta</a>
+              <a href="#localizacao" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">Localização</a>
             </div>
 
             {/* Botão Agendar Desktop */}
             <div className="hidden md:flex items-center space-x-4">
               <a 
-                href="https://instagram.com/patricia.gastroped" 
+                href="https://www.instagram.com/patricia.gastroped?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-gray-400 hover:text-dourado transition-colors"
@@ -126,14 +129,11 @@ export default function App() {
                   <span className="bg-verde-agua/10 text-[#4A6661] px-6 py-2 rounded-full text-lg md:text-xl font-medium shadow-sm border border-verde-agua/20">
                     Pediatra & Gastropediatra
                   </span>
-                  <span className="bg-lilas/40 text-[#6D5A94] px-5 py-1.5 rounded-full text-base md:text-lg font-medium shadow-sm border border-lilas">
-                    CRM-PA 11040 | RQE 9798 | RQE 9802
-                  </span>
                 </div>
               </div>
               
               <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed text-left sm:text-justify">
-                Cuidado especializado e humanizado em saúde digestiva e pediatria.
+                Cuidado especializado e humanizado<br />em saúde digestiva e pediatria.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
                 <a 
@@ -143,7 +143,7 @@ export default function App() {
                   Agendar Consulta
                 </a>
                 <a 
-                  href="https://www.instagram.com/dra.patriciapereiracarvalho/"
+                  href="https://www.instagram.com/patricia.gastroped?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="inline-flex justify-center items-center px-8 py-3.5 border-2 border-dourado/20 text-base font-medium rounded-full text-[#5A5350] hover:bg-white transition-colors shadow-sm"
@@ -151,7 +151,7 @@ export default function App() {
                   <div className="p-1.5 rounded-lg bg-dourado text-white mr-2">
                     <Instagram className="w-4 h-4" />
                   </div>
-                  @dra.patriciapereiracarvalho
+                  @patricia.gastroped
                 </a>
               </div>
             </FadeIn>
@@ -174,16 +174,107 @@ export default function App() {
 
 
 
+      {/* --- Áreas de Atuação Section --- */}
+      <section id="servicos" className="py-20 bg-white relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <FadeIn className="text-center mb-16">
+            <h2 className="text-sm font-semibold text-verde-agua tracking-widest uppercase mb-3">Áreas de Atuação</h2>
+            <h3 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Nossas Especialidades</h3>
+            <div className="w-16 h-1 bg-dourado mx-auto rounded-full mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Cuidado completo e especializado para a saúde do seu filho
+            </p>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch max-w-5xl mx-auto">
+            {/* Coluna 1: Gastropediatria */}
+            <FadeIn delay={0.1} className="space-y-8 flex flex-col">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-lilas/30 rounded-xl flex items-center justify-center text-ametista">
+                  <Stethoscope className="w-6 h-6" />
+                </div>
+                <h4 className="font-serif text-2xl font-bold text-[#5A5350]">Gastropediatria</h4>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-xl font-bold text-ametista mb-2">Alergias e Intolerâncias</h5>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Diagnóstico e manejo de APLV (Alergia à Proteína do Leite de Vaca), Alergias Alimentares e Intolerâncias.
+                  </p>
+                </div>
+
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-xl font-bold text-ametista mb-2">Distúrbios Digestivos Comuns</h5>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Tratamento de Refluxo Gastroesofágico, Gastrite, Vômitos, Constipação Intestinal e Diarreia.
+                  </p>
+                </div>
+
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-xl font-bold text-ametista mb-2">Saúde Abdominal e Intestinal</h5>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Dor Abdominal, Sangramentos Intestinais, Doenças Inflamatórias Intestinais, Doença Celíaca, Má-absorção intestinal e baixo ganho de peso.
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Coluna 2: Pediatria */}
+            <FadeIn delay={0.2} className="space-y-8 flex flex-col">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-verde-agua/20 rounded-xl flex items-center justify-center text-verde-agua">
+                  <Baby className="w-6 h-6" />
+                </div>
+                <h4 className="font-serif text-2xl font-bold text-[#5A5350]">Pediatria Geral</h4>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-xl font-bold text-verde-agua mb-2">Puericultura</h5>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Acompanhamento integral do crescimento e desenvolvimento, do nascimento à adolescência.
+                  </p>
+                </div>
+
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-xl font-bold text-verde-agua mb-2">Urgências Pediátricas</h5>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Atendimento resolutivo para síndromes febris, afecções respiratórias, intestinais e dermatológicas.
+                  </p>
+                </div>
+
+                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+                  <h5 className="font-serif text-xl font-bold text-verde-agua mb-2">Introdução Alimentar Guiada</h5>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Um guia prático e seguro para o início da alimentação sólida, respeitando o tempo, a prontidão e as necessidades individuais do seu bebê.
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
       {/* --- Sobre Mim Section --- */}
       <section id="sobre" className="py-20 bg-seda">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeIn className="text-center mb-12">
+            <h2 className="text-sm font-semibold text-verde-agua tracking-widest uppercase mb-3">
+              CRM-PA 11040 | RQE 9798 (Pediatria) | RQE 9802 (Gastropediatria)
+            </h2>
+            <h3 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">
+              Dra. Patrícia Pereira Carvalho
+            </h3>
+            <div className="w-16 h-1 bg-dourado mx-auto rounded-full mt-4"></div>
+          </FadeIn>
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
             {/* Imagem */}
             <FadeIn delay={0.1} className="w-full lg:w-[45%] relative">
               <div className="relative">
                 <div className="absolute inset-0 bg-dourado/20 rounded-[40px] transform translate-x-4 translate-y-4 border border-dourado/30"></div>
                 <img 
-                  src="https://raw.githubusercontent.com/patriciapereiracarvalhokids-ctrl/fotos/main/IMG_2247.PNG" 
+                  src="https://raw.githubusercontent.com/patriciapereiracarvalhokids-ctrl/fotos/main/IMG_2246.PNG" 
                   alt="Dra. Patricia Carvalho" 
                   className="relative rounded-[40px] shadow-lg w-full object-cover object-top border-4 border-white"
                   referrerPolicy="no-referrer"
@@ -193,13 +284,6 @@ export default function App() {
 
             {/* Texto */}
             <FadeIn delay={0.3} className="w-full lg:w-[55%]">
-              <h2 className="font-serif text-3xl md:text-5xl font-medium text-[#5A5350] mb-2">
-                Dra. Patrícia Pereira Carvalho
-              </h2>
-              <p className="text-verde-agua font-semibold mb-6 text-lg">
-                CRM-PA 11040 | RQE 9798 (Pediatria) | RQE 9802 (Gastropediatria)
-              </p>
-              
               <div className="mb-8">
                 <h3 className="font-serif text-xl font-semibold text-dourado mb-6 flex items-center">
                   <span className="w-8 h-[1px] bg-dourado mr-3"></span>
@@ -234,7 +318,7 @@ export default function App() {
               </div>
 
               <div className="bg-white/50 border-l-4 border-dourado p-6 rounded-r-2xl mb-8">
-                <p className="text-gray-700 italic leading-relaxed">
+                <p className="text-gray-700 italic leading-relaxed text-left sm:text-justify">
                   "Vivenciar a alergia alimentar na minha própria casa me deu a clareza necessária para humanizar cada detalhe do atendimento, garantindo que cada pequeno paciente receba não apenas cuidado médico, mas verdadeiro respeito e atenção."
                 </p>
               </div>
@@ -247,7 +331,7 @@ export default function App() {
                   Agendar Consulta
                 </a>
                 <a 
-                  href="https://instagram.com/patricia.gastroped" 
+                  href="https://www.instagram.com/patricia.gastroped?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="inline-flex items-center text-dourado hover:text-dourado/80 transition-colors font-medium"
@@ -255,102 +339,6 @@ export default function App() {
                   <Instagram className="w-5 h-5 mr-2" />
                   @patricia.gastroped
                 </a>
-              </div>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
-      {/* --- Áreas de Atuação Section --- */}
-      <section id="servicos" className="py-20 bg-white relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <FadeIn className="text-center mb-16">
-            <h2 className="text-sm font-semibold text-verde-agua tracking-widest uppercase mb-3">Áreas de Atuação</h2>
-            <h3 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">Nossas Especialidades</h3>
-            <div className="w-16 h-1 bg-dourado mx-auto rounded-full mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Cuidado completo e especializado para a saúde do seu filho
-            </p>
-          </FadeIn>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch">
-            {/* Coluna 1: Gastropediatria */}
-            <FadeIn delay={0.1} className="space-y-8 flex flex-col">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-lilas/30 rounded-xl flex items-center justify-center text-ametista">
-                  <Stethoscope className="w-6 h-6" />
-                </div>
-                <h4 className="font-serif text-2xl font-bold text-[#5A5350]">Gastropediatria</h4>
-              </div>
-
-              <div className="space-y-6">
-                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
-                  <h5 className="font-serif text-lg font-bold text-ametista mb-2">Alergias e Intolerâncias</h5>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Diagnóstico e manejo de APLV (Alergia à Proteína do Leite de Vaca), Alergias Alimentares e Intolerâncias.
-                  </p>
-                </div>
-
-                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
-                  <h5 className="font-serif text-lg font-bold text-ametista mb-2">Distúrbios Digestivos Comuns</h5>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Tratamento de Refluxo Gastroesofágico, Gastrite, Vômitos, Constipação Intestinal e Diarreia.
-                  </p>
-                </div>
-
-                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
-                  <h5 className="font-serif text-lg font-bold text-ametista mb-2">Saúde Abdominal e Intestinal</h5>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Dor Abdominal, Sangramentos Intestinais, Doenças Inflamatórias Intestinais, Doença Celíaca, Má-absorção intestinal e baixo ganho de peso.
-                  </p>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Coluna 2: Pediatria */}
-            <FadeIn delay={0.2} className="space-y-8 flex flex-col">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-verde-agua/20 rounded-xl flex items-center justify-center text-verde-agua">
-                  <Baby className="w-6 h-6" />
-                </div>
-                <h4 className="font-serif text-2xl font-bold text-[#5A5350]">Pediatria Geral</h4>
-              </div>
-
-              <div className="space-y-6">
-                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
-                  <h5 className="font-serif text-lg font-bold text-verde-agua mb-2">Puericultura</h5>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Acompanhamento integral do crescimento e desenvolvimento, do nascimento à adolescência.
-                  </p>
-                </div>
-
-                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
-                  <h5 className="font-serif text-lg font-bold text-verde-agua mb-2">Urgências Pediátricas</h5>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Atendimento resolutivo para síndromes febris, afecções respiratórias, intestinais e dermatológicas.
-                  </p>
-                </div>
-
-                <div className="bg-seda p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
-                  <h5 className="font-serif text-lg font-bold text-verde-agua mb-2">Introdução Alimentar Guiada</h5>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Um guia prático e seguro para o início da alimentação sólida, respeitando o tempo, a prontidão e as necessidades individuais do seu bebê.
-                  </p>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Coluna Foto */}
-            <FadeIn delay={0.3} className="hidden lg:flex items-center justify-center">
-              <div className="relative w-full max-w-md">
-                <div className="absolute -inset-4 bg-lilas/20 rounded-[40px] transform rotate-3"></div>
-                <img 
-                  src="https://raw.githubusercontent.com/patriciapereiracarvalhokids-ctrl/fotos/main/IMG_2247.PNG" 
-                  alt="Dra. Patricia Carvalho" 
-                  className="relative rounded-[30px] shadow-xl w-full aspect-[4/5] object-cover object-top border-4 border-white"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-dourado/20 rounded-full blur-2xl"></div>
               </div>
             </FadeIn>
           </div>
@@ -374,29 +362,15 @@ export default function App() {
             </p>
           </FadeIn>
 
-          <div className="flex flex-col lg:flex-row gap-12 items-stretch">
-            {/* Coluna Foto */}
-            <FadeIn delay={0.1} className="w-full lg:w-1/2">
-              <div className="relative h-full">
-                <div className="absolute -inset-4 bg-verde-agua/10 rounded-[40px] transform -rotate-3"></div>
-                <img 
-                  src="https://raw.githubusercontent.com/patriciapereiracarvalhokids-ctrl/fotos/main/IMG_2246.PNG" 
-                  alt="Atendimento Pediatria" 
-                  className="relative rounded-[30px] shadow-lg w-full h-full object-cover border-4 border-white"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute top-1/2 -left-8 w-16 h-16 bg-lilas/30 rounded-full blur-xl"></div>
-              </div>
-            </FadeIn>
-
+          <div className="flex flex-col lg:flex-row gap-12 lg:items-center">
             {/* Coluna Blocos */}
-            <div className="w-full lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="w-full lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-6 order-2 lg:order-1">
               <FadeIn delay={0.2} className="bg-seda p-8 rounded-3xl border border-gray-100 hover:shadow-md transition-all group">
                 <div className="w-12 h-12 bg-verde-agua/20 rounded-2xl flex items-center justify-center text-verde-agua mb-6 group-hover:bg-verde-agua group-hover:text-white transition-colors">
                   <MessageCircle className="w-6 h-6" />
                 </div>
                 <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Acolhimento e Escuta</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 leading-relaxed text-justify hyphens-auto" lang="pt-BR">
                   Foco total na queixa atual e preocupações da família.
                 </p>
               </FadeIn>
@@ -406,7 +380,7 @@ export default function App() {
                   <Clock className="w-6 h-6" />
                 </div>
                 <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Análise do Cotidiano</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 leading-relaxed text-justify hyphens-auto" lang="pt-BR">
                   Avaliação minuciosa da rotina, alimentação e hábitos.
                 </p>
               </FadeIn>
@@ -416,7 +390,7 @@ export default function App() {
                   <User className="w-6 h-6" />
                 </div>
                 <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Histórico de Vida e Contexto Familiar</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 leading-relaxed text-justify hyphens-auto" lang="pt-BR">
                   Análise dos antecedentes, dados de nascimento e histórico de saúde familiar.
                 </p>
               </FadeIn>
@@ -426,7 +400,7 @@ export default function App() {
                   <Stethoscope className="w-6 h-6" />
                 </div>
                 <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Exame Físico Detalhado</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 leading-relaxed text-justify hyphens-auto" lang="pt-BR">
                   Avaliação minuciosa da saúde física e crescimento.
                 </p>
               </FadeIn>
@@ -436,7 +410,7 @@ export default function App() {
                   <FileText className="w-6 h-6" />
                 </div>
                 <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Raciocínio Diagnóstico</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 leading-relaxed text-justify hyphens-auto" lang="pt-BR">
                   Elaboração baseada nas evidências coletadas.
                 </p>
               </FadeIn>
@@ -446,11 +420,25 @@ export default function App() {
                   <Heart className="w-6 h-6" />
                 </div>
                 <h4 className="font-serif text-xl font-bold text-[#5A5350] mb-3">Plano Terapêutico</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 leading-relaxed text-justify hyphens-auto" lang="pt-BR">
                   Definição conjunta das estratégias de tratamento.
                 </p>
               </FadeIn>
             </div>
+
+            {/* Coluna Foto */}
+            <FadeIn delay={0.1} className="w-full lg:w-1/2 order-1 lg:order-2">
+              <div className="relative max-w-md mx-auto">
+                <div className="absolute -inset-4 bg-verde-agua/10 rounded-[40px] transform rotate-3"></div>
+                <img 
+                  src="https://github.com/patriciapcarvalho11-create/sitepatricia/blob/main/Gemini_Generated_Image_b09fnbb09fnbb09f.PNG?raw=true" 
+                  alt="Atendimento Pediatria" 
+                  className="relative rounded-[30px] shadow-lg w-full h-auto object-cover border-4 border-white"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute top-1/2 -right-8 w-16 h-16 bg-lilas/30 rounded-full blur-xl"></div>
+              </div>
+            </FadeIn>
           </div>
         </div>
       </section>
@@ -639,8 +627,8 @@ export default function App() {
             <FadeIn delay={0.2} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
               <div className="h-48 overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=800" 
-                  alt="Bebê no peniquinho" 
+                  src="https://raw.githubusercontent.com/patriciapcarvalho11-create/sitepatricia/main/constipa%C3%A7%C3%A3o.png" 
+                  alt="Penico infantil" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   referrerPolicy="no-referrer" 
                 />
@@ -670,7 +658,7 @@ export default function App() {
             <FadeIn delay={0.3} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
               <div className="h-48 overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1523292562811-8fa7962a78c8?auto=format&fit=crop&q=80&w=800" 
+                  src="https://raw.githubusercontent.com/patriciapcarvalho11-create/sitepatricia/main/refluxo.png" 
                   alt="Refluxo no bebê" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   referrerPolicy="no-referrer" 
@@ -701,7 +689,7 @@ export default function App() {
             <FadeIn delay={0.4} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group flex flex-col h-full">
               <div className="h-48 overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=800" 
+                  src="https://raw.githubusercontent.com/patriciapcarvalho11-create/sitepatricia/main/bebe.png" 
                   alt="Suspeita de APLV" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   referrerPolicy="no-referrer" 
@@ -731,7 +719,7 @@ export default function App() {
           
           <FadeIn delay={0.4} className="mt-16 text-center">
             <a 
-              href="https://www.instagram.com/dra.patriciapereiracarvalho/" 
+              href="https://www.instagram.com/patricia.gastroped?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="inline-flex items-center justify-center px-8 py-3.5 border-2 border-verde-agua text-base font-medium rounded-full text-verde-agua hover:bg-verde-agua hover:text-white transition-colors shadow-sm"
@@ -781,44 +769,17 @@ export default function App() {
                 <div className="px-6 py-6 bg-white text-gray-600 border-t border-gray-100">
                   <p className="mb-4">Aceito os planos abaixo e também atendimentos particulares:</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-center">
-                    <div className="flex flex-col items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-16 h-12 flex items-center justify-center mb-2">
-                        <img 
-                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Vale_logo.svg/2560px-Vale_logo.svg.png" 
-                          alt="Vale" 
-                          className="max-w-full max-h-full object-contain"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-[#5A5350]">Vale</span>
+                    <div className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <span className="text-sm font-semibold text-[#5A5350]">Vale</span>
                     </div>
-                    <div className="flex flex-col items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-16 h-12 flex items-center justify-center mb-2">
-                        <img 
-                          src="https://suldoparasaude.com.br/wp-content/uploads/2021/08/logo-sul-do-para-saude.png" 
-                          alt="Sul do Pará Saúde" 
-                          className="max-w-full max-h-full object-contain"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-[#5A5350]">Sul do Pará</span>
+                    <div className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <span className="text-sm font-semibold text-[#5A5350]">Sul do Pará</span>
                     </div>
-                    <div className="flex flex-col items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-16 h-12 flex items-center justify-center mb-2">
-                        <img 
-                          src="https://salutebeneficios.com.br/wp-content/uploads/2022/07/logo-salute-beneficios.png" 
-                          alt="Salute Benefícios" 
-                          className="max-w-full max-h-full object-contain"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-[#5A5350]">Salute</span>
+                    <div className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <span className="text-sm font-semibold text-[#5A5350]">Salute</span>
                     </div>
-                    <div className="flex flex-col items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mb-2">
-                        <User className="w-6 h-6 text-gray-500" />
-                      </div>
-                      <span className="text-xs font-semibold text-[#5A5350]">Particular</span>
+                    <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-100">
+                      <span className="text-sm font-semibold text-[#5A5350]">Particular</span>
                     </div>
                   </div>
                 </div>
@@ -867,7 +828,7 @@ export default function App() {
       </section>
 
       {/* --- Footer --- */}
-      <footer className="bg-lilas/30 pt-20 pb-12 relative overflow-hidden mt-10">
+      <footer className="bg-lilas/30 pt-20 pb-12 relative overflow-hidden">
         {/* Wave SVG */}
         <div className="absolute top-0 left-0 w-full overflow-hidden leading-none">
           <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[40px] md:h-[60px]">
@@ -876,40 +837,33 @@ export default function App() {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            {/* Coluna 1: Sobre */}
-            <div className="col-span-1 lg:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-              <div className="h-32 md:h-40 w-auto mb-6">
-                <Logo />
-              </div>
-            </div>
-
-            {/* Coluna 2: Links Rápidos */}
+          <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12 items-start">
+            {/* Coluna 1: Links Rápidos */}
             <div>
-              <h3 className="font-serif text-lg font-medium text-[#5A5350] mb-4">Links Rápidos</h3>
+              <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-4">Links Rápidos</h3>
               <ul className="space-y-3">
-                <li><a href="#sobre" className="text-gray-600 hover:text-verde-agua text-sm transition-colors">Sobre mim</a></li>
-                <li><a href="#servicos" className="text-gray-600 hover:text-verde-agua text-sm transition-colors">Serviços</a></li>
-                <li><a href="#consulta" className="text-gray-600 hover:text-verde-agua text-sm transition-colors">A Consulta</a></li>
+                <li><a href="#sobre" className="text-gray-600 hover:text-verde-agua text-base transition-colors">Sobre mim</a></li>
+                <li><a href="#servicos" className="text-gray-600 hover:text-verde-agua text-base transition-colors">Serviços</a></li>
+                <li><a href="#consulta" className="text-gray-600 hover:text-verde-agua text-base transition-colors">A Consulta</a></li>
               </ul>
             </div>
 
             {/* Coluna 3: Contato */}
             <div>
-              <h3 className="font-serif text-lg font-medium text-[#5A5350] mb-4">Contato</h3>
+              <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-4">Contato</h3>
               <ul className="space-y-3">
-                <li className="flex items-start text-sm text-gray-600">
-                  <MapPin className="w-4 h-4 text-verde-agua mr-2 flex-shrink-0 mt-0.5" />
+                <li className="flex items-start text-base text-gray-600">
+                  <MapPin className="w-5 h-5 text-verde-agua mr-2 flex-shrink-0 mt-0.5" />
                   <span>Av. Itacaiúnas, 1730<br/>Cidade Nova, Marabá - PA</span>
                 </li>
-                <li className="flex items-center text-sm text-gray-600">
-                  <Phone className="w-4 h-4 text-verde-agua mr-2 flex-shrink-0" />
+                <li className="flex items-center text-base text-gray-600">
+                  <Phone className="w-5 h-5 text-verde-agua mr-2 flex-shrink-0" />
                   <span>(94) 992018972</span>
                 </li>
-                <li className="flex items-center text-sm text-gray-600">
-                  <Instagram className="w-4 h-4 text-dourado mr-2 flex-shrink-0" />
-                  <a href="https://www.instagram.com/dra.patriciapereiracarvalho/" target="_blank" rel="noopener noreferrer" className="hover:text-dourado transition-colors">
-                    @dra.patriciapereiracarvalho
+                <li className="flex items-center text-base text-gray-600">
+                  <Instagram className="w-5 h-5 text-dourado mr-2 flex-shrink-0" />
+                  <a href="https://www.instagram.com/patricia.gastroped?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:text-dourado transition-colors">
+                    @patricia.gastroped
                   </a>
                 </li>
               </ul>
@@ -919,10 +873,12 @@ export default function App() {
             <div>
               <h3 className="font-serif text-lg font-medium text-[#5A5350] mb-4">Conecte-se</h3>
               <div className="flex space-x-4 mb-6">
-                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-verde-agua hover:bg-verde-agua hover:text-white transition-all shadow-sm">
-                  <MessageCircle className="w-5 h-5" />
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm overflow-hidden group">
+                  <div className="w-full h-full flex items-center justify-center bg-verde-agua text-white transition-transform group-hover:scale-110">
+                    <MessageCircle className="w-5 h-5" />
+                  </div>
                 </a>
-                <a href="https://www.instagram.com/dra.patriciapereiracarvalho/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm overflow-hidden group">
+                <a href="https://www.instagram.com/patricia.gastroped?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm overflow-hidden group">
                   <div className="w-full h-full flex items-center justify-center bg-dourado text-white transition-transform group-hover:scale-110">
                     <Instagram className="w-5 h-5" />
                   </div>
@@ -934,7 +890,7 @@ export default function App() {
           <div className="border-t border-[#D1AFA6]/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col items-center md:items-start">
               <p className="text-gray-600 text-sm font-medium mb-1">
-                Cuidado especializado e humanizado em saúde digestiva e pediatria.
+                Cuidado especializado e humanizado<br />em saúde digestiva e pediatria.
               </p>
               <p className="text-dourado font-bold text-xs tracking-wider uppercase">
                 CRM-PA 11040 | RQE 9802
@@ -1034,7 +990,7 @@ export default function App() {
         >
           <div className="relative flex items-center justify-center">
             {!isChatOpen && <div className="absolute inset-0 bg-white rounded-full opacity-40 animate-ping"></div>}
-            {isChatOpen ? <X className="w-6 h-6 md:w-6 md:h-6 relative z-10" /> : <MessageCircle className="w-6 h-6 md:w-6 md:h-6 relative z-10" />}
+            {isChatOpen ? <X className="w-6 h-6 md:w-6 md:h-6 relative z-10" /> : <img src="https://github.com/patriciapereiracarvalhokids-ctrl/patriciapereiracarvalhokids/blob/main/01.png?raw=true" alt="WhatsApp" className="w-7 h-7 md:w-7 md:h-7 relative z-10 object-contain" />}
           </div>
           <span className="hidden md:block font-medium text-sm tracking-wide">
             {isChatOpen ? 'Fechar' : 'Fale Conosco'}
