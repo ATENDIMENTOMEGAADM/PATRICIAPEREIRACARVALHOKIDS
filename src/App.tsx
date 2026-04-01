@@ -91,14 +91,6 @@ export default function App() {
             {/* Botão Agendar Desktop */}
             <div className="hidden md:flex items-center space-x-4">
               <a 
-                href="https://www.instagram.com/patricia.gastroped?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-400 hover:text-dourado transition-colors"
-              >
-                <Instagram className="w-5 h-5 text-dourado" />
-              </a>
-              <a 
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -875,7 +867,7 @@ export default function App() {
               <div className="flex space-x-4 mb-6">
                 <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm overflow-hidden group">
                   <div className="w-full h-full flex items-center justify-center bg-verde-agua text-white transition-transform group-hover:scale-110">
-                    <MessageCircle className="w-5 h-5" />
+                    <img src="https://github.com/patriciapereiracarvalhokids-ctrl/patriciapereiracarvalhokids/blob/main/01.png?raw=true" alt="WhatsApp" className="w-6 h-6 object-contain" />
                   </div>
                 </a>
                 <a href="https://www.instagram.com/patricia.gastroped?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm overflow-hidden group">
