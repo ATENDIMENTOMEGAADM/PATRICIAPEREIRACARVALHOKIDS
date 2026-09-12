@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Home, User, MapPin, Phone, Clock, Baby, Stethoscope, Apple, Heart, ChevronDown, Star, MessageCircle, Instagram, FileText, AlertCircle, Calendar, Info, X, Send, ArrowRight, Shield, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import Logo from './components/Logo';
+import ClinicaGallery from './components/ClinicaGallery';
 
 // --- Cores do Tema ---
 // Off-white seda: #FAF7F2
@@ -93,6 +94,7 @@ export default function App() {
               <a href="#sobre" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">Sobre mim</a>
               <a href="#servicos" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">Serviços</a>
               <a href="#consulta" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">A Consulta</a>
+              <a href="#clinica" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">A Clínica</a>
               <a href="#localizacao" className="text-base font-medium text-gray-600 hover:text-verde-agua transition-colors">Localização</a>
             </div>
 
@@ -443,6 +445,9 @@ export default function App() {
         </div>
       </section>
 
+      {/* --- Conheça a Clínica Gallery --- */}
+      <ClinicaGallery />
+
       {/* --- Depoimentos Section --- */}
       <section className="py-20 bg-lilas/20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -528,17 +533,17 @@ export default function App() {
           </FadeIn>
 
           <div className="flex flex-col md:flex-row gap-12 items-center">
-            {/* Mapa Placeholder */}
+            {/* Mapa Interativo */}
             <FadeIn delay={0.2} className="w-full md:w-1/2 h-[400px] bg-gray-200 rounded-[30px] overflow-hidden shadow-inner relative border-4 border-white">
               <iframe 
-                src="https://maps.google.com/maps?q=Folha%2016%2C%20Quadra%2001%2C%20Lote%2014%20A%2C%20Bairro%20Nova%20Marab%C3%A1%2C%20Marab%C3%A1%20-%20PA&t=&z=16&ie=UTF8&iwloc=&output=embed" 
+                src="https://maps.google.com/maps?q=-5.3384631,-49.0977433&hl=pt-BR&z=17&output=embed" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
                 allowFullScreen={false} 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Mapa de Marabá"
+                title="Patrícia Carvalho | Pediatra e Gastropediatra no Google Maps"
               ></iframe>
             </FadeIn>
 
@@ -556,7 +561,7 @@ export default function App() {
                     Marabá - PA
                   </p>
                   <a 
-                    href="https://www.google.com/maps/search/?api=1&query=Folha+16%2C+Quadra+01%2C+Lote+14+A%2C+Bairro+Nova+Marab%C3%A1%2C+Marab%C3%A1+-+PA" 
+                    href="https://maps.app.goo.gl/U7YrAtu4TZmB35VQ7" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-block mt-3 text-sm font-medium text-verde-agua hover:text-verde-agua/80 underline underline-offset-4"
@@ -856,7 +861,14 @@ export default function App() {
               <ul className="space-y-3">
                 <li className="flex items-start text-base text-gray-600">
                   <MapPin className="w-5 h-5 text-verde-agua mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Folha 16, Quadra 01, Lote 14 A<br/>Bairro Nova Marabá, Marabá - PA</span>
+                  <a 
+                    href="https://maps.app.goo.gl/U7YrAtu4TZmB35VQ7" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="hover:text-verde-agua transition-colors"
+                  >
+                    Folha 16, Quadra 01, Lote 14 A<br/>Bairro Nova Marabá, Marabá - PA
+                  </a>
                 </li>
                 <li className="flex items-center text-base text-gray-600">
                   <Phone className="w-5 h-5 text-verde-agua mr-2 flex-shrink-0" />
