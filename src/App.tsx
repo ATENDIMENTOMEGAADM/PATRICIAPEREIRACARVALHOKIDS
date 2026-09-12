@@ -46,12 +46,12 @@ export default function App() {
     e.preventDefault();
     const text = `Olá! Meu nome é ${chatData.nome}. Gostaria de falar sobre: ${chatData.assunto}`;
     const encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/5594992018972?text=${encodedText}`, '_blank');
+    window.open(`https://wa.me/5594992274198?text=${encodedText}`, '_blank');
     setIsChatOpen(false);
     setChatData({ nome: '', assunto: '' });
   };
 
-  const whatsappLink = "https://wa.me/5594992018972?text=Ol%C3%A1!%20Gostaria%20de%20agendar%20uma%20consulta%20com%20a%20Dra.%20Patr%C3%ADcia%20Carvalho.";
+  const whatsappLink = "https://wa.me/5594992274198?text=Ol%C3%A1!%20Gostaria%20de%20agendar%20uma%20consulta%20com%20a%20Dra.%20Patr%C3%ADcia%20Carvalho.";
 
   return (
     <div className="min-h-screen bg-seda text-[#5A5350] font-sans pb-20 md:pb-0">
@@ -523,7 +523,7 @@ export default function App() {
             {/* Mapa Placeholder */}
             <FadeIn delay={0.2} className="w-full md:w-1/2 h-[400px] bg-gray-200 rounded-[30px] overflow-hidden shadow-inner relative border-4 border-white">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3973.8123456789!2d-49.1234567!3d-5.3644682!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNcKwMjEnNTIuMSJTIDQ5wrAwNycxMi40Ilc!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr" 
+                src="https://maps.google.com/maps?q=Folha%2016%2C%20Quadra%2001%2C%20Lote%2014%20A%2C%20Bairro%20Nova%20Marab%C3%A1%2C%20Marab%C3%A1%20-%20PA&t=&z=16&ie=UTF8&iwloc=&output=embed" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
@@ -543,12 +543,12 @@ export default function App() {
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-[#5A5350]">Endereço</h3>
                   <p className="mt-1 text-gray-600 leading-relaxed">
-                    Av. Itacaiúnas, 1730<br />
-                    Cidade Nova<br />
+                    Folha 16, Quadra 01, Lote 14 A<br />
+                    Bairro Nova Marabá<br />
                     Marabá - PA
                   </p>
                   <a 
-                    href="https://maps.app.goo.gl/kJfJT2VcvQ1pLhoQ9" 
+                    href="https://www.google.com/maps/search/?api=1&query=Folha+16%2C+Quadra+01%2C+Lote+14+A%2C+Bairro+Nova+Marab%C3%A1%2C+Marab%C3%A1+-+PA" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-block mt-3 text-sm font-medium text-verde-agua hover:text-verde-agua/80 underline underline-offset-4"
@@ -564,7 +564,9 @@ export default function App() {
                 </div>
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-[#5A5350]">Telefone / WhatsApp</h3>
-                  <p className="mt-1 text-gray-600">(94) 992018972</p>
+                  <p className="mt-1 text-gray-600">
+                    <a href="tel:5594992274198" className="hover:text-verde-agua transition-colors">(94) 99227-4198</a>
+                  </p>
                 </div>
               </div>
             </FadeIn>
@@ -846,11 +848,11 @@ export default function App() {
               <ul className="space-y-3">
                 <li className="flex items-start text-base text-gray-600">
                   <MapPin className="w-5 h-5 text-verde-agua mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Av. Itacaiúnas, 1730<br/>Cidade Nova, Marabá - PA</span>
+                  <span>Folha 16, Quadra 01, Lote 14 A<br/>Bairro Nova Marabá, Marabá - PA</span>
                 </li>
                 <li className="flex items-center text-base text-gray-600">
                   <Phone className="w-5 h-5 text-verde-agua mr-2 flex-shrink-0" />
-                  <span>(94) 992018972</span>
+                  <a href="tel:5594992274198" className="hover:text-verde-agua transition-colors">(94) 99227-4198</a>
                 </li>
                 <li className="flex items-center text-base text-gray-600">
                   <Instagram className="w-5 h-5 text-dourado mr-2 flex-shrink-0" />
