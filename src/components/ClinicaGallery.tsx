@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, X, Maximize2, Sparkles, Heart, Shield, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -76,12 +76,40 @@ export default function ClinicaGallery() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'slideshow' | 'grid'>('slideshow');
 
+  // Rastreamento de gestos de toque / arrasto no celular
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
   const handlePrev = () => {
     setSelectedIndex((prev) => (prev === 0 ? clinicImages.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
     setSelectedIndex((prev) => (prev === clinicImages.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const currentX = e.changedTouches[0].clientX;
+    const currentY = e.changedTouches[0].clientY;
+    const diffX = currentX - touchStartX.current;
+    const diffY = currentY - touchStartY.current;
+
+    // Se o movimento horizontal for maior que 40px e predominante em relação ao vertical
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX < 0) {
+        handleNext(); // Arrasto para a esquerda -> Próxima
+      } else {
+        handlePrev(); // Arrasto para a direita -> Anterior
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
   };
 
   useEffect(() => {
@@ -147,8 +175,10 @@ export default function ClinicaGallery() {
             <div className="relative bg-seda rounded-3xl overflow-hidden shadow-sm border border-gray-100 group">
               {/* Foto Principal */}
               <div 
-                className="relative h-[340px] sm:h-[460px] md:h-[540px] w-full overflow-hidden cursor-pointer"
+                className="relative h-[340px] sm:h-[460px] md:h-[540px] w-full overflow-hidden cursor-pointer touch-pan-y"
                 onClick={() => setIsLightboxOpen(true)}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
               >
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -165,34 +195,33 @@ export default function ClinicaGallery() {
                 </AnimatePresence>
 
                 {/* Gradiente inferior para legibilidade */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
 
-                {/* Informações da Imagem */}
-                <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between text-white pointer-events-none">
-                  <div>
-                    <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-md mb-2">
-                      {currentImage.category}
-                    </span>
-                    <h3 className="font-serif text-xl sm:text-2xl font-medium drop-shadow-sm">
-                      {currentImage.title}
-                    </h3>
-                  </div>
+                {/* Badge do Contador no topo superior direito (fixo, seguro para telas de celular) */}
+                <div className="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 z-20 flex items-center gap-2 pointer-events-auto">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsLightboxOpen(true);
+                    }}
+                    className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-black/40 hover:bg-black/60 text-white text-xs font-semibold backdrop-blur-md border border-white/15 shadow-sm transition-all hover:scale-105"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5 text-white" />
+                    Ampliar Foto
+                  </button>
+                  <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-mono font-medium shadow-md border border-white/15 whitespace-nowrap shrink-0">
+                    {selectedIndex + 1} / {clinicImages.length}
+                  </span>
+                </div>
 
-                  <div className="flex items-center gap-2 pointer-events-auto">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsLightboxOpen(true);
-                      }}
-                      className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/90 text-[#5A5350] hover:bg-white text-xs font-semibold backdrop-blur-md shadow-md transition-all hover:scale-105"
-                    >
-                      <Maximize2 className="w-3.5 h-3.5 text-verde-agua" />
-                      Ampliar Foto
-                    </button>
-                    <span className="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-xs font-mono font-medium">
-                      {selectedIndex + 1} / {clinicImages.length}
-                    </span>
-                  </div>
+                {/* Informações da Imagem na base */}
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 text-white pointer-events-none z-10">
+                  <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-xs font-medium bg-white/20 backdrop-blur-md mb-1.5 sm:mb-2">
+                    {currentImage.category}
+                  </span>
+                  <h3 className="font-serif text-lg sm:text-2xl font-medium drop-shadow-sm leading-snug">
+                    {currentImage.title}
+                  </h3>
                 </div>
 
                 {/* Botões de Navegação Anterior / Próxima */}
@@ -201,20 +230,20 @@ export default function ClinicaGallery() {
                     e.stopPropagation();
                     handlePrev();
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/90 hover:bg-white text-[#5A5350] hover:text-verde-agua flex items-center justify-center shadow-lg backdrop-blur-sm transition-all hover:scale-110 active:scale-95 z-20"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-[#5A5350] hover:text-verde-agua flex items-center justify-center shadow-lg backdrop-blur-sm transition-all hover:scale-110 active:scale-95 z-20"
                   aria-label="Foto anterior"
                 >
-                  <ChevronLeft className="w-6 h-6" />
+                  <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleNext();
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/90 hover:bg-white text-[#5A5350] hover:text-verde-agua flex items-center justify-center shadow-lg backdrop-blur-sm transition-all hover:scale-110 active:scale-95 z-20"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-[#5A5350] hover:text-verde-agua flex items-center justify-center shadow-lg backdrop-blur-sm transition-all hover:scale-110 active:scale-95 z-20"
                   aria-label="Próxima foto"
                 >
-                  <ChevronRight className="w-6 h-6" />
+                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
 
@@ -355,53 +384,87 @@ export default function ClinicaGallery() {
             onClick={() => setIsLightboxOpen(false)}
           >
             {/* Barra superior do Modal */}
-            <div className="flex items-center justify-between text-white z-10">
-              <div>
-                <span className="text-xs uppercase tracking-wider text-dourado font-medium">
+            <div className="flex items-center justify-between text-white z-10 gap-3">
+              <div className="min-w-0 flex-1 pr-2">
+                <span className="text-[11px] sm:text-xs uppercase tracking-wider text-dourado font-medium">
                   {currentImage.category}
                 </span>
-                <h3 className="text-lg sm:text-xl font-serif">{currentImage.title}</h3>
+                <h3 className="text-base sm:text-xl font-serif truncate">{currentImage.title}</h3>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-mono bg-white/10 px-3 py-1 rounded-full">
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                <span className="text-xs sm:text-sm font-mono bg-white/10 px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap shrink-0">
                   {selectedIndex + 1} de {clinicImages.length}
                 </span>
                 <button
                   onClick={() => setIsLightboxOpen(false)}
-                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="p-1.5 sm:p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0"
                   aria-label="Fechar galeria"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
             </div>
 
-            {/* Imagem Central */}
+            {/* Imagem Central com Suporte a Arrasto / Deslize com o Dedo */}
             <div 
-              className="relative flex-1 flex items-center justify-center my-4 overflow-hidden"
+              className="relative flex-1 flex items-center justify-center my-2 sm:my-4 overflow-hidden touch-pan-y select-none"
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
             >
-              <img
-                src={currentImage.url}
-                alt={currentImage.title}
-                className="max-h-[75vh] max-w-[95vw] object-contain rounded-xl shadow-2xl"
-                referrerPolicy="no-referrer"
-              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentImage.url}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.35}
+                  onDragEnd={(_, info) => {
+                    const threshold = 40;
+                    if (info.offset.x < -threshold || info.velocity.x < -300) {
+                      handleNext();
+                    } else if (info.offset.x > threshold || info.velocity.x > 300) {
+                      handlePrev();
+                    }
+                  }}
+                  initial={{ opacity: 0, x: 25 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -25 }}
+                  transition={{ duration: 0.25 }}
+                  className="cursor-grab active:cursor-grabbing flex items-center justify-center max-h-[75vh] max-w-[95vw]"
+                >
+                  <img
+                    src={currentImage.url}
+                    alt={currentImage.title}
+                    draggable={false}
+                    className="max-h-[70vh] sm:max-h-[75vh] max-w-[95vw] object-contain rounded-xl shadow-2xl pointer-events-none select-none"
+                    referrerPolicy="no-referrer"
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Dica de deslize com o dedo no celular */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 sm:hidden pointer-events-none z-20">
+                <span className="px-3 py-1 rounded-full bg-black/60 text-[11px] text-white/90 backdrop-blur-md flex items-center gap-1.5 shadow-md border border-white/10">
+                  <ChevronLeft className="w-3 h-3 text-dourado" />
+                  Arraste para o lado
+                  <ChevronRight className="w-3 h-3 text-dourado" />
+                </span>
+              </div>
 
               {/* Botões de Navegação no Modal */}
               <button
                 onClick={handlePrev}
-                className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/80 text-white transition-colors"
+                className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-full bg-black/50 hover:bg-black/80 text-white transition-colors z-20"
                 aria-label="Foto anterior"
               >
-                <ChevronLeft className="w-7 h-7" />
+                <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
               </button>
               <button
                 onClick={handleNext}
-                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/80 text-white transition-colors"
+                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-full bg-black/50 hover:bg-black/80 text-white transition-colors z-20"
                 aria-label="Próxima foto"
               >
-                <ChevronRight className="w-7 h-7" />
+                <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
               </button>
             </div>
 

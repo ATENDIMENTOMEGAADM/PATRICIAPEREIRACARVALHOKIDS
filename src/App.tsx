@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, User, MapPin, Phone, Clock, Baby, Stethoscope, Apple, Heart, ChevronDown, Star, MessageCircle, Instagram, FileText, AlertCircle, Calendar, Info, X, Send, ArrowRight, Shield, CheckCircle } from 'lucide-react';
+import { Home, User, MapPin, Phone, Clock, Baby, Stethoscope, Apple, Heart, ChevronDown, Star, MessageCircle, Instagram, FileText, AlertCircle, Calendar, Info, X, Send, ArrowRight, Shield, CheckCircle, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
 import Logo from './components/Logo';
 import ClinicaGallery from './components/ClinicaGallery';
@@ -263,9 +263,21 @@ export default function App() {
       <section id="sobre" className="py-20 bg-seda">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn className="text-center mb-12">
-            <h2 className="text-sm font-semibold text-verde-agua tracking-widest uppercase mb-3">
-              CRM-PA 11040 | RQE 9798 (Pediatria) | RQE 9802 (Gastropediatria)
-            </h2>
+            <div className="inline-flex items-center justify-center flex-wrap gap-2.5 mb-3">
+              <h2 className="text-xs sm:text-sm font-semibold text-verde-agua tracking-widest uppercase">
+                CRM-PA 11040 | RQE 9798 (Pediatria) | RQE 9802 (Gastropediatria)
+              </h2>
+              <a 
+                href="https://cremepa.org.br/busca-medicos" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                title="Consultar registro no CREMEPA (Conselho Regional de Medicina do Pará)"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-verde-agua/15 hover:bg-verde-agua/25 text-verde-agua hover:text-[#4A6661] transition-all border border-verde-agua/30 shadow-xs group"
+              >
+                <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <span>Consultar CRM</span>
+              </a>
+            </div>
             <h3 className="font-serif text-3xl md:text-4xl font-medium text-[#5A5350] mb-4">
               Dra. Patrícia Pereira Carvalho
             </h3>
@@ -836,7 +848,7 @@ export default function App() {
       </section>
 
       {/* --- Footer --- */}
-      <footer className="bg-lilas/30 pt-20 pb-12 relative overflow-hidden">
+      <footer className="bg-lilas/30 pt-20 pb-32 md:pb-16 relative overflow-hidden">
         {/* Wave SVG */}
         <div className="absolute top-0 left-0 w-full overflow-hidden leading-none">
           <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[40px] md:h-[60px]">
@@ -856,7 +868,7 @@ export default function App() {
               </ul>
             </div>
 
-            {/* Coluna 3: Contato */}
+            {/* Coluna 2: Contato */}
             <div>
               <h3 className="font-serif text-xl font-medium text-[#5A5350] mb-4">Contato</h3>
               <ul className="space-y-3">
@@ -884,7 +896,7 @@ export default function App() {
               </ul>
             </div>
 
-            {/* Coluna 4: Redes Sociais */}
+            {/* Coluna 3: Redes Sociais */}
             <div>
               <h3 className="font-serif text-lg font-medium text-[#5A5350] mb-4">Conecte-se</h3>
               <div className="flex space-x-4 mb-6">
@@ -902,15 +914,32 @@ export default function App() {
             </div>
           </FadeIn>
           
-          <div className="border-t border-[#D1AFA6]/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex flex-col items-center md:items-start">
-              <p className="text-gray-600 text-sm font-medium mb-1">
-                Cuidado especializado e humanizado<br />em saúde digestiva e pediatria.
+          <div className="border-t border-[#D1AFA6]/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left">
+              <p className="text-gray-600 text-sm font-medium mb-3">
+                Cuidado especializado e humanizado em saúde digestiva e pediatria.
               </p>
-              <p className="text-dourado font-bold text-xs tracking-wider uppercase">
-                CRM-PA 11040 | RQE 9802
-              </p>
+              
+              {/* Botão de Consulta do CRM no CREMEPA */}
+              <div className="flex flex-col sm:flex-row items-center gap-2.5 bg-white/80 backdrop-blur-xs px-4 py-2.5 rounded-2xl border border-[#D1AFA6]/40 shadow-xs">
+                <div className="flex items-center gap-1.5 text-dourado font-bold text-xs tracking-wider uppercase">
+                  <Shield className="w-3.5 h-3.5 text-verde-agua shrink-0" />
+                  <span>CRM-PA 11040 | RQE 9802</span>
+                </div>
+                <span className="hidden sm:inline text-gray-300">|</span>
+                <a 
+                  href="https://cremepa.org.br/busca-medicos" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  title="Consultar no site do CREMEPA (Conselho Regional de Medicina do Pará)"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-verde-agua hover:bg-verde-agua/90 text-white shadow-xs transition-all active:scale-95 group"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:scale-110 shrink-0" />
+                  <span>Buscar Médico no CREMEPA</span>
+                </a>
+              </div>
             </div>
+
             <div className="flex flex-col items-center md:items-end">
               <p className="text-gray-500 text-xs text-center md:text-right">
                 &copy; {new Date().getFullYear()} Dra. Patricia Pereira Carvalho. Todos os direitos reservados.
