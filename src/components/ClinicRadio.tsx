@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Radio, Play, Pause, Volume2, VolumeX, Music, Sparkles, ChevronDown, ChevronUp, ChevronRight, X } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Radio, Play, Pause, Volume2, VolumeX, Music, Sparkles, ChevronDown, ChevronUp, ChevronRight, X, Volume1 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const AUDIO_SRC = "https://raw.githubusercontent.com/ATENDIMENTOMEGAADM/AUDIOSPATRICIA/refs/heads/main/Cancilla%20Sonriente.mp3";
@@ -7,22 +7,42 @@ const AUDIO_SRC = "https://raw.githubusercontent.com/ATENDIMENTOMEGAADM/AUDIOSPA
 export default function ClinicRadio() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(0.65);
+  const [volume, setVolume] = useState(0.30);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [showAutoplayPrompt, setShowAutoplayPrompt] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const startPlayback = useCallback(() => {
+    if (!audioRef.current) return;
+    audioRef.current.volume = 0.30;
+    audioRef.current.play()
+      .then(() => {
+        setIsPlaying(true);
+        setIsLoading(false);
+        setShowAutoplayPrompt(false);
+      })
+      .catch((err) => {
+        console.warn("Autoplay bloqueado pelo navegador até interação:", err);
+        setShowAutoplayPrompt(true);
+      });
+  }, []);
+
   useEffect(() => {
-    const audio = new Audio(AUDIO_SRC);
+    // Usar elemento HTMLAudioElement com preload ativo
+    const audio = new Audio();
+    audio.src = AUDIO_SRC;
     audio.loop = true;
-    audio.volume = volume;
+    audio.preload = 'auto';
+    audio.volume = 0.30;
     audioRef.current = audio;
 
     const handleWaiting = () => setIsLoading(true);
     const handlePlaying = () => {
       setIsLoading(false);
       setIsPlaying(true);
+      setShowAutoplayPrompt(false);
     };
     const handlePause = () => setIsPlaying(false);
 
@@ -30,7 +50,43 @@ export default function ClinicRadio() {
     audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('pause', handlePause);
 
+    // Tentativa 1 imediata
+    audio.play()
+      .then(() => {
+        setIsPlaying(true);
+        setIsLoading(false);
+        setShowAutoplayPrompt(false);
+      })
+      .catch(() => {
+        // Navegadores modernos (Chrome, Safari, iOS, Android) bloqueiam som não solicitado
+        setShowAutoplayPrompt(true);
+      });
+
+    // Tentativa 2: Em qualquer toque, clique ou tecla na janela inteira
+    const handleUserInteraction = () => {
+      if (audioRef.current && audioRef.current.paused) {
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+            setIsLoading(false);
+            setShowAutoplayPrompt(false);
+          })
+          .catch(() => {});
+      }
+    };
+
+    window.addEventListener('pointerdown', handleUserInteraction, { once: true });
+    window.addEventListener('touchstart', handleUserInteraction, { once: true });
+    window.addEventListener('click', handleUserInteraction, { once: true });
+    window.addEventListener('keydown', handleUserInteraction, { once: true });
+    window.addEventListener('scroll', handleUserInteraction, { once: true, passive: true });
+
     return () => {
+      window.removeEventListener('pointerdown', handleUserInteraction);
+      window.removeEventListener('touchstart', handleUserInteraction);
+      window.removeEventListener('click', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
+      window.removeEventListener('scroll', handleUserInteraction);
       audio.pause();
       audio.removeEventListener('waiting', handleWaiting);
       audio.removeEventListener('playing', handlePlaying);
@@ -47,16 +103,7 @@ export default function ClinicRadio() {
       setIsPlaying(false);
     } else {
       setIsLoading(true);
-      audioRef.current
-        .play()
-        .then(() => {
-          setIsPlaying(true);
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          console.error("Erro ao tocar áudio:", err);
-          setIsLoading(false);
-        });
+      startPlayback();
     }
   };
 
@@ -83,6 +130,67 @@ export default function ClinicRadio() {
 
   return (
     <>
+      {/* ========================================================= */}
+      {/* 🔔 BANNER TOAST DE ATIVAÇÃO DE SOM (SE NAVEGADOR BLOQUEOU AUTOPLAY) */}
+      {/* ========================================================= */}
+      <AnimatePresence>
+        {showAutoplayPrompt && !isPlaying && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed top-20 sm:top-24 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] sm:w-auto"
+          >
+            <div 
+              onClick={() => {
+                startPlayback();
+                setShowAutoplayPrompt(false);
+              }}
+              className="bg-white/95 backdrop-blur-xl border border-dourado/40 shadow-2xl p-3 sm:px-4 sm:py-2.5 rounded-full flex items-center justify-between gap-3 cursor-pointer hover:border-verde-agua transition-all active:scale-95 group"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-full bg-verde-agua/20 text-verde-agua flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <Volume1 className="w-4 h-4 animate-pulse" />
+                </span>
+                <div className="text-left pr-1">
+                  <p className="text-xs font-semibold text-[#5A5350] leading-snug">
+                    Ouvir a Rádio da Clínica
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    Toque para ativar o som ambiente (30%)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startPlayback();
+                    setShowAutoplayPrompt(false);
+                  }}
+                  className="px-3 py-1 bg-verde-agua text-white text-[11px] font-semibold rounded-full shadow-sm hover:bg-verde-agua/90"
+                >
+                  Tocar
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowAutoplayPrompt(false);
+                  }}
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                  aria-label="Dispensar aviso de som"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ========================================================= */}
       {/* 📱 MODO MOBILE: BOTÃO LATERAL OCULTO / RETRÁTIL (ABA LATERAL) */}
       {/* ========================================================= */}
@@ -160,7 +268,7 @@ export default function ClinicRadio() {
                           </span>
                         )}
                       </h4>
-                      <p className="text-[11px] text-gray-400">Música ambiente relaxante</p>
+                      <p className="text-[11px] text-gray-400">Música ambiente relaxante (30%)</p>
                     </div>
                   </div>
                   <button
@@ -229,6 +337,9 @@ export default function ClinicRadio() {
                       className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-verde-agua"
                       aria-label="Volume da música"
                     />
+                    <span className="text-[11px] font-mono text-gray-500 w-8 text-right">
+                      {Math.round(volume * 100)}%
+                    </span>
                   </div>
                 </div>
 
@@ -275,7 +386,7 @@ export default function ClinicRadio() {
                         </span>
                       )}
                     </h4>
-                    <p className="text-[11px] text-gray-400">Música ambiente relaxante</p>
+                    <p className="text-[11px] text-gray-400">Música ambiente relaxante (30%)</p>
                   </div>
                 </div>
                 <button
@@ -347,6 +458,9 @@ export default function ClinicRadio() {
                     className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-verde-agua"
                     aria-label="Volume da música"
                   />
+                  <span className="text-[10px] font-mono text-gray-400">
+                    {Math.round(volume * 100)}%
+                  </span>
                 </div>
               </div>
             </motion.div>
