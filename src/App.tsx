@@ -34,7 +34,7 @@ export default function App() {
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -64,10 +64,18 @@ export default function App() {
             transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
           }
         }
+        @media (min-width: 768px) {
+          .desktop-fade-nav {
+            opacity: ${Math.max(0, 1 - scrollY / 200)};
+            pointer-events: ${scrollY > 160 ? 'none' : 'auto'};
+            transform: translateY(${Math.max(-20, -scrollY / 8)}px);
+            transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+          }
+        }
       `}</style>
       
       {/* --- Navegação --- */}
-      <nav className="fixed md:sticky top-0 z-40 w-full pointer-events-none md:pointer-events-auto md:bg-white/95 md:backdrop-blur-xl md:border-b md:border-gray-100 md:shadow-sm transition-all duration-300">
+      <nav className="fixed md:sticky top-0 z-40 w-full pointer-events-none md:pointer-events-auto md:bg-white/95 md:backdrop-blur-xl md:border-b md:border-gray-100 md:shadow-sm desktop-fade-nav">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-0 pointer-events-none md:pointer-events-auto">
           <div className="flex justify-start md:justify-between items-center h-auto md:h-56 py-2 md:py-0">
             {/* Logo / Nome */}
