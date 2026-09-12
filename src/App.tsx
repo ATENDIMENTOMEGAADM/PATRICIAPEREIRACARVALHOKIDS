@@ -3,6 +3,7 @@ import { Home, User, MapPin, Phone, Clock, Baby, Stethoscope, Apple, Heart, Chev
 import { motion } from 'motion/react';
 import Logo from './components/Logo';
 import ClinicaGallery from './components/ClinicaGallery';
+import ClinicRadio from './components/ClinicRadio';
 
 // --- Cores do Tema ---
 // Off-white seda: #FAF7F2
@@ -1011,6 +1012,9 @@ export default function App() {
           </span>
         </button>
       </div>
+
+      {/* --- Rádio da Clínica Flutuante --- */}
+      <ClinicRadio />
 
       {/* --- Bottom Navigation (Mobile) --- */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
