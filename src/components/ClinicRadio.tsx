@@ -1,10 +1,37 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Radio, Play, Pause, Volume2, VolumeX, Music, Sparkles, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, X, Volume1 } from 'lucide-react';
+import { Radio, Play, Pause, Volume2, VolumeX, Music, Sparkles, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, X, Volume1, SkipForward, SkipBack, ListMusic } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-const AUDIO_SRC = "https://raw.githubusercontent.com/ATENDIMENTOMEGAADM/AUDIOSPATRICIA/refs/heads/main/Cancilla%20Sonriente.mp3";
+export interface RadioTrack {
+  id: string;
+  title: string;
+  subtitle: string;
+  src: string;
+}
+
+const PLAYLIST: RadioTrack[] = [
+  {
+    id: 'cancilla-sonriente',
+    title: 'Cancilla Sonriente',
+    subtitle: 'Sons suaves para os pequenos',
+    src: 'https://raw.githubusercontent.com/ATENDIMENTOMEGAADM/AUDIOSPATRICIA/refs/heads/main/Cancilla%20Sonriente.mp3',
+  },
+  {
+    id: 'lullaby-of-the-stars',
+    title: 'Lullaby of the Stars',
+    subtitle: 'Melodia relaxante e serena',
+    src: 'https://raw.githubusercontent.com/ATENDIMENTOMEGAADM/AUDIOSPATRICIA/refs/heads/main/Lullaby%20of%20the%20Stars.mp3',
+  },
+  {
+    id: 'drowsy-lullaby',
+    title: 'Drowsy Lullaby',
+    subtitle: 'Canção de ninar doce e acolhedora',
+    src: 'https://raw.githubusercontent.com/ATENDIMENTOMEGAADM/AUDIOSPATRICIA/refs/heads/main/Drowsy%20Lullaby.mp3',
+  },
+];
 
 export default function ClinicRadio() {
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.30);
@@ -15,9 +42,48 @@ export default function ClinicRadio() {
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const currentTrack = PLAYLIST[currentTrackIndex];
+
+  // Iniciar reprodução com tratamento de erro
+  const playTrack = useCallback((index: number, shouldAutoPlay = true) => {
+    if (!audioRef.current) return;
+    const track = PLAYLIST[index];
+    if (!track) return;
+
+    setCurrentTrackIndex(index);
+    audioRef.current.src = track.src;
+    audioRef.current.load();
+
+    if (shouldAutoPlay) {
+      setIsLoading(true);
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoading(false);
+          setShowAutoplayPrompt(false);
+        })
+        .catch((err) => {
+          console.warn("Autoplay bloqueado pelo navegador:", err);
+          setIsPlaying(false);
+          setIsLoading(false);
+          setShowAutoplayPrompt(true);
+        });
+    }
+  }, []);
+
+  const handleNextTrack = useCallback(() => {
+    const nextIndex = (currentTrackIndex + 1) % PLAYLIST.length;
+    playTrack(nextIndex, isPlaying);
+  }, [currentTrackIndex, isPlaying, playTrack]);
+
+  const handlePrevTrack = useCallback(() => {
+    const prevIndex = (currentTrackIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
+    playTrack(prevIndex, isPlaying);
+  }, [currentTrackIndex, isPlaying, playTrack]);
+
   const startPlayback = useCallback(() => {
     if (!audioRef.current) return;
-    audioRef.current.volume = 0.30;
+    audioRef.current.volume = isMuted ? 0 : volume;
     audioRef.current.play()
       .then(() => {
         setIsPlaying(true);
@@ -28,13 +94,11 @@ export default function ClinicRadio() {
         console.warn("Autoplay bloqueado pelo navegador até interação:", err);
         setShowAutoplayPrompt(true);
       });
-  }, []);
+  }, [isMuted, volume]);
 
   useEffect(() => {
-    // Usar elemento HTMLAudioElement com preload ativo
     const audio = new Audio();
-    audio.src = AUDIO_SRC;
-    audio.loop = true;
+    audio.src = PLAYLIST[0].src;
     audio.preload = 'auto';
     audio.volume = 0.30;
     audioRef.current = audio;
@@ -46,10 +110,23 @@ export default function ClinicRadio() {
       setShowAutoplayPrompt(false);
     };
     const handlePause = () => setIsPlaying(false);
+    
+    // Quando a música atual terminar, avançar automaticamente para a próxima da fila
+    const handleEnded = () => {
+      setCurrentTrackIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % PLAYLIST.length;
+        if (audioRef.current) {
+          audioRef.current.src = PLAYLIST[nextIndex].src;
+          audioRef.current.play().catch(() => {});
+        }
+        return nextIndex;
+      });
+    };
 
     audio.addEventListener('waiting', handleWaiting);
     audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('pause', handlePause);
+    audio.addEventListener('ended', handleEnded);
 
     // Tentativa 1 imediata
     audio.play()
@@ -59,11 +136,10 @@ export default function ClinicRadio() {
         setShowAutoplayPrompt(false);
       })
       .catch(() => {
-        // Navegadores modernos (Chrome, Safari, iOS, Android) bloqueiam som não solicitado
         setShowAutoplayPrompt(true);
       });
 
-    // Tentativa 2: Em qualquer toque, clique ou tecla na janela inteira
+    // Tentativa 2: Em qualquer toque, clique ou tecla
     const handleUserInteraction = () => {
       if (audioRef.current && audioRef.current.paused) {
         audioRef.current.play()
@@ -92,6 +168,7 @@ export default function ClinicRadio() {
       audio.removeEventListener('waiting', handleWaiting);
       audio.removeEventListener('playing', handlePlaying);
       audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('ended', handleEnded);
       audioRef.current = null;
     };
   }, []);
@@ -158,7 +235,7 @@ export default function ClinicRadio() {
                     Ouvir a Rádio da Clínica
                   </p>
                   <p className="text-[10px] text-gray-500">
-                    Toque para ativar o som ambiente (30%)
+                    Toque para ativar o som ambiente ({currentTrack.title})
                   </p>
                 </div>
               </div>
@@ -251,7 +328,7 @@ export default function ClinicRadio() {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="fixed top-1/2 -translate-y-1/2 left-2.5 z-50 w-[275px] bg-white/90 rounded-3xl shadow-2xl border border-dourado/20 p-4 sm:p-5 text-[#5A5350] backdrop-blur-xl"
+                className="fixed top-1/2 -translate-y-1/2 left-2.5 z-50 w-[290px] bg-white/95 rounded-3xl shadow-2xl border border-dourado/20 p-4 sm:p-5 text-[#5A5350] backdrop-blur-xl max-h-[90vh] overflow-y-auto"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between pb-3 border-b border-gray-100">
@@ -281,39 +358,59 @@ export default function ClinicRadio() {
                   </button>
                 </div>
 
-                {/* Informações da Música */}
-                <div className="py-4 flex items-center gap-3">
+                {/* Informações da Música Atual */}
+                <div className="py-3 flex items-center gap-3">
                   <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-verde-agua/20 to-dourado/20 flex items-center justify-center flex-shrink-0 shadow-inner">
                     <Music className={`w-6 h-6 text-verde-agua ${isPlaying ? 'animate-bounce' : ''}`} />
                   </div>
                   <div className="overflow-hidden flex-1">
-                    <p className="text-xs font-bold text-[#5A5350] truncate">Cancilla Sonriente</p>
+                    <p className="text-xs font-bold text-[#5A5350] truncate">{currentTrack.title}</p>
                     <p className="text-[11px] text-gray-500 truncate flex items-center gap-1 mt-0.5">
                       <Sparkles className="w-3 h-3 text-dourado flex-shrink-0" />
-                      Sons suaves para os pequenos
+                      {currentTrack.subtitle}
                     </p>
                   </div>
                 </div>
 
-                {/* Controles de Reprodução */}
+                {/* Controles de Reprodução com Avançar / Voltar */}
                 <div className="space-y-3">
-                  <button
-                    onClick={togglePlay}
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-verde-agua hover:bg-verde-agua/90 active:scale-95 text-white rounded-2xl text-xs font-semibold shadow-sm transition-all"
-                  >
-                    {isPlaying ? (
-                      <>
-                        <Pause className="w-4 h-4 fill-current" />
-                        Pausar Música
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 fill-current ml-0.5" />
-                        Tocar Música da Clínica
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={handlePrevTrack}
+                      className="p-2.5 rounded-full bg-seda text-gray-600 hover:text-verde-agua hover:bg-gray-100 transition-colors active:scale-95"
+                      title="Música anterior"
+                      aria-label="Música anterior"
+                    >
+                      <SkipBack className="w-4 h-4 fill-current" />
+                    </button>
+
+                    <button
+                      onClick={togglePlay}
+                      disabled={isLoading}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-verde-agua hover:bg-verde-agua/90 active:scale-95 text-white rounded-2xl text-xs font-semibold shadow-sm transition-all"
+                    >
+                      {isPlaying ? (
+                        <>
+                          <Pause className="w-4 h-4 fill-current" />
+                          Pausar Música
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4 fill-current ml-0.5" />
+                          Tocar Música
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleNextTrack}
+                      className="p-2.5 rounded-full bg-seda text-gray-600 hover:text-verde-agua hover:bg-gray-100 transition-colors active:scale-95"
+                      title="Próxima música da fila"
+                      aria-label="Próxima música da fila"
+                    >
+                      <SkipForward className="w-4 h-4 fill-current" />
+                    </button>
+                  </div>
 
                   {/* Volume */}
                   <div className="flex items-center gap-3 bg-seda p-2.5 rounded-2xl border border-gray-100">
@@ -341,6 +438,44 @@ export default function ClinicRadio() {
                     <span className="text-[11px] font-mono text-gray-500 w-8 text-right">
                       {Math.round(volume * 100)}%
                     </span>
+                  </div>
+
+                  {/* Fila de Reprodução (Playlist) */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-medium text-gray-500 flex items-center gap-1.5">
+                        <ListMusic className="w-3.5 h-3.5 text-dourado" />
+                        Fila de Reprodução ({PLAYLIST.length})
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {PLAYLIST.map((track, idx) => {
+                        const isCurrent = idx === currentTrackIndex;
+                        return (
+                          <button
+                            key={track.id}
+                            onClick={() => playTrack(idx, true)}
+                            className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between transition-colors ${
+                              isCurrent
+                                ? 'bg-verde-agua/15 text-verde-agua font-semibold border border-verde-agua/30'
+                                : 'hover:bg-gray-50 text-gray-600'
+                            }`}
+                          >
+                            <div className="truncate pr-2">
+                              <p className="truncate text-[11px]">{track.title}</p>
+                              <p className="text-[9.5px] text-gray-400 truncate">{track.subtitle}</p>
+                            </div>
+                            {isCurrent && (
+                              <div className="flex items-end gap-0.5 h-3 w-2.5 flex-shrink-0">
+                                <span className={`w-0.5 bg-verde-agua rounded-full h-1.5 ${isPlaying ? 'animate-[pulse_0.6s_ease-in-out_infinite]' : ''}`}></span>
+                                <span className={`w-0.5 bg-verde-agua rounded-full h-3 ${isPlaying ? 'animate-[pulse_0.4s_ease-in-out_infinite_0.2s]' : ''}`}></span>
+                                <span className={`w-0.5 bg-verde-agua rounded-full h-2 ${isPlaying ? 'animate-[pulse_0.8s_ease-in-out_infinite_0.4s]' : ''}`}></span>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -413,7 +548,7 @@ export default function ClinicRadio() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 15, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="mb-3 w-80 bg-white/95 backdrop-blur-xl p-4 rounded-2xl shadow-xl border border-dourado/20 text-[#5A5350]"
+                    className="mb-3 w-84 bg-white/95 backdrop-blur-xl p-4 rounded-2xl shadow-xl border border-dourado/20 text-[#5A5350]"
                   >
                     {/* Header da Radiozinha */}
                     <div className="flex items-center justify-between pb-3 border-b border-gray-100">
@@ -452,60 +587,115 @@ export default function ClinicRadio() {
                         )}
                       </div>
                       <div className="overflow-hidden flex-1">
-                        <p className="text-xs font-semibold text-[#5A5350] truncate">Cancilla Sonriente</p>
+                        <p className="text-xs font-semibold text-[#5A5350] truncate">{currentTrack.title}</p>
                         <p className="text-[11px] text-gray-500 truncate flex items-center gap-1">
                           <Sparkles className="w-3 h-3 text-dourado flex-shrink-0" />
-                          Sons suaves para os pequenos
+                          {currentTrack.subtitle}
                         </p>
                       </div>
                     </div>
 
-                    {/* Controles de Reprodução */}
-                    <div className="pt-2 flex items-center justify-between gap-3">
-                      <button
-                        onClick={togglePlay}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-verde-agua hover:bg-verde-agua/90 active:scale-95 text-white rounded-full text-xs font-medium shadow-sm transition-all"
-                      >
-                        {isPlaying ? (
-                          <>
-                            <Pause className="w-3.5 h-3.5 fill-current" />
-                            Pausar
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-                            Tocar Música
-                          </>
-                        )}
-                      </button>
+                    {/* Controles de Reprodução com Avançar / Voltar */}
+                    <div className="pt-2 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={handlePrevTrack}
+                            className="p-2 rounded-full bg-seda text-gray-600 hover:text-verde-agua hover:bg-gray-100 transition-colors active:scale-95"
+                            title="Música anterior"
+                            aria-label="Música anterior"
+                          >
+                            <SkipBack className="w-3.5 h-3.5 fill-current" />
+                          </button>
 
-                      {/* Controle de Volume */}
-                      <div className="flex items-center gap-2 flex-1 max-w-[140px]">
-                        <button
-                          onClick={toggleMute}
-                          className="text-gray-500 hover:text-verde-agua transition-colors"
-                          aria-label={isMuted ? "Desmutar" : "Mutar"}
-                        >
-                          {isMuted || volume === 0 ? (
-                            <VolumeX className="w-4 h-4 text-gray-400" />
-                          ) : (
-                            <Volume2 className="w-4 h-4 text-verde-agua" />
-                          )}
-                        </button>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.05"
-                          value={isMuted ? 0 : volume}
-                          onChange={handleVolumeChange}
-                          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-verde-agua"
-                          aria-label="Volume da música"
-                        />
-                        <span className="text-[10px] font-mono text-gray-400">
-                          {Math.round(volume * 100)}%
-                        </span>
+                          <button
+                            onClick={togglePlay}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-3.5 py-2 bg-verde-agua hover:bg-verde-agua/90 active:scale-95 text-white rounded-full text-xs font-medium shadow-sm transition-all"
+                          >
+                            {isPlaying ? (
+                              <>
+                                <Pause className="w-3.5 h-3.5 fill-current" />
+                                Pausar
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                                Tocar
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            onClick={handleNextTrack}
+                            className="p-2 rounded-full bg-seda text-gray-600 hover:text-verde-agua hover:bg-gray-100 transition-colors active:scale-95"
+                            title="Próxima música da fila"
+                            aria-label="Próxima música da fila"
+                          >
+                            <SkipForward className="w-3.5 h-3.5 fill-current" />
+                          </button>
+                        </div>
+
+                        {/* Controle de Volume */}
+                        <div className="flex items-center gap-2 flex-1 max-w-[130px]">
+                          <button
+                            onClick={toggleMute}
+                            className="text-gray-500 hover:text-verde-agua transition-colors"
+                            aria-label={isMuted ? "Desmutar" : "Mutar"}
+                          >
+                            {isMuted || volume === 0 ? (
+                              <VolumeX className="w-4 h-4 text-gray-400" />
+                            ) : (
+                              <Volume2 className="w-4 h-4 text-verde-agua" />
+                            )}
+                          </button>
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={isMuted ? 0 : volume}
+                            onChange={handleVolumeChange}
+                            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-verde-agua"
+                            aria-label="Volume da música"
+                          />
+                          <span className="text-[10px] font-mono text-gray-400">
+                            {Math.round(volume * 100)}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Lista da Fila de Reprodução */}
+                      <div className="pt-2 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10.5px] font-medium text-gray-500 flex items-center gap-1">
+                            <ListMusic className="w-3 h-3 text-dourado" />
+                            Fila de Músicas ({PLAYLIST.length})
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          {PLAYLIST.map((track, idx) => {
+                            const isCurrent = idx === currentTrackIndex;
+                            return (
+                              <button
+                                key={track.id}
+                                onClick={() => playTrack(idx, true)}
+                                className={`w-full text-left px-2 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
+                                  isCurrent
+                                    ? 'bg-verde-agua/15 text-verde-agua font-medium border border-verde-agua/20'
+                                    : 'hover:bg-gray-50 text-gray-600'
+                                }`}
+                              >
+                                <span className="truncate text-[11px]">{idx + 1}. {track.title}</span>
+                                {isCurrent && (
+                                  <span className="text-[9px] font-mono uppercase bg-verde-agua text-white px-1.5 py-0.5 rounded-full">
+                                    {isPlaying ? 'Tocando' : 'Pausado'}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -554,8 +744,8 @@ export default function ClinicRadio() {
                         </span>
                       )}
                     </span>
-                    <span className="text-[10px] text-gray-500 leading-tight mt-0.5">
-                      {isPlaying ? 'Cancilla Sonriente' : 'Clique para ouvir'}
+                    <span className="text-[10px] text-gray-500 leading-tight mt-0.5 truncate max-w-[140px]">
+                      {isPlaying ? currentTrack.title : 'Clique para ouvir'}
                     </span>
                   </div>
 
@@ -574,6 +764,7 @@ export default function ClinicRadio() {
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="w-8 h-8 rounded-full bg-white/95 border border-gray-200 shadow-sm flex items-center justify-center text-gray-500 hover:text-verde-agua hover:bg-white transition-colors"
                   aria-label={isExpanded ? "Fechar detalhes da rádio" : "Abrir detalhes da rádio"}
+                  title="Ver fila de reprodução"
                 >
                   {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                 </button>
@@ -585,3 +776,4 @@ export default function ClinicRadio() {
     </>
   );
 }
+
