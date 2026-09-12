@@ -10,59 +10,64 @@ export interface GalleryImage {
 
 const clinicImages: GalleryImage[] = [
   {
-    url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12.png?raw=true",
-    title: "Fachada da Clínica",
-    category: "Ambiente Externo",
+    url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(1).png?raw=true",
+    title: "Consultório da Dra. Patrícia",
+    category: "Consultório",
   },
   {
-    url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(1).png?raw=true",
-    title: "Entrada e Recepção",
-    category: "Recepção",
+    url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12.png?raw=true",
+    title: "Consultório da Dra. Patrícia (Área de Atendimento)",
+    category: "Consultório",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(2).png?raw=true",
-    title: "Área de Atendimento Integrada",
-    category: "Recepção",
+    title: "Área Kids no Consultório da Dra. Patrícia",
+    category: "Consultório / Área Kids",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(3).png?raw=true",
-    title: "Espaço Kids & Área Lúdica",
-    category: "Espaço Kids",
+    title: "Sala de Atendimento 01 (Outros Médicos)",
+    category: "Salas de Atendimento",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(4).png?raw=true",
-    title: "Sala de Espera e Conforto",
-    category: "Área de Espera",
+    title: "Área de Espera e Recepção",
+    category: "Recepção e Espera",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(5).png?raw=true",
-    title: "Consultório Pediátrico",
-    category: "Consultório",
+    title: "Balcão de Recepção",
+    category: "Recepção",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(6).png?raw=true",
-    title: "Ambiente de Avaliação Clínica",
-    category: "Consultório",
+    title: "Espaço Café, Água e TV para Clientes",
+    category: "Conveniência e Conforto",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(7).png?raw=true",
-    title: "Espaço de Cuidado e Exames",
-    category: "Consultório",
+    title: "Corredor de Acesso às Salas de Atendimento",
+    category: "Circulação e Acesso",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(8).png?raw=true",
-    title: "Detalhes do Consultório",
-    category: "Estrutura",
+    title: "Brinquedoteca na Recepção e Entrada",
+    category: "Brinquedoteca",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(9).png?raw=true",
-    title: "Conforto e Serenidade",
-    category: "Ambiente",
+    title: "Brinquedoteca na Recepção (Espaço Lúdico)",
+    category: "Brinquedoteca",
   },
   {
     url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(10).png?raw=true",
-    title: "Estrutura Moderna e Humanizada",
-    category: "Estrutura",
+    title: "Entrada e Hall Principal Amplo",
+    category: "Recepção e Entrada",
+  },
+  {
+    url: "https://github.com/ATENDIMENTOMEGAADM/IMAGENS-patricia/blob/main/2026-09-12%20(11).png?raw=true",
+    title: "Fachada da Clínica",
+    category: "Fachada e Acesso",
   },
 ];
 
