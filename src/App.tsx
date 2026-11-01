@@ -947,6 +947,7 @@ export default function App() {
               <p className="text-gray-400 text-[10px] flex items-center mt-1">
                 Feito com <Heart className="w-3 h-3 text-[#FF9B9B] mx-1 fill-current" /> para o seu bebê
               </p>
+              <a href="/admin" rel="nofollow" className="text-gray-400 text-[10px] mt-2 hover:text-verde-agua transition-colors">Área restrita</a>
             </div>
           </div>
         </div>

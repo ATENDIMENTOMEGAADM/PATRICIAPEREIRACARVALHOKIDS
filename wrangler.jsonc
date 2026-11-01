@@ -1,0 +1,16 @@
+{
+  // Site + área restrita (/admin) + API própria do site (/api/*), com banco D1 separado do sistema de receitas.
+  "name": "site-patricia-carvalho",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/admin", "/admin/*"]
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "site-patricia-carvalho", "database_id": "PREENCHER_APOS_CRIAR_O_BANCO", "migrations_dir": "migrations" }
+  ],
+  "observability": { "enabled": true }
+}
