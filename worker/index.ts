@@ -193,14 +193,14 @@ async function contaApi(request: Request, env: Env): Promise<Response> {
   const mine = (v: any) => String(v) === rpid; // posse por id, normalizando o tipo (string x number)
   if (path === '/api/conta/consultas' && method === 'GET') {
     await limit(env, 'conta-dados', patient!.tokenHash, 300);
-    const data = await consulFetch<{ last?: any; next?: any }>(env, '/api/v1/appointments?patient=' + encodeURIComponent(rpid), fail, integ);
+    const data = await consulFetch<{ last?: any; next?: any }>(env, '/api/v1/appointments?patient=' + encodeURIComponent(rpid), fail, integ, { genericError: true });
     const slim = (a: any) => a && mine(a.patient_id) ? { startsAt: a.starts_at ?? null, endsAt: a.ends_at ?? null, status: a.status ?? null } : null;
     await logAccess(env, { actorType: 'patient', actorId: patient!.id, patientUserId: patient!.id, remotePatientId: rpid, integrationId: integ, action: 'patient.consultas.read', ip, userAgent: ua });
     return json({ last: slim(data?.last), next: slim(data?.next) });
   }
   if (path === '/api/conta/receitas' && method === 'GET') {
     await limit(env, 'conta-dados', patient!.tokenHash, 300);
-    const data = await consulFetch<{ items?: any[] }>(env, '/api/v1/records?kind=prescription&patient=' + encodeURIComponent(rpid), fail, integ);
+    const data = await consulFetch<{ items?: any[] }>(env, '/api/v1/records?kind=prescription&patient=' + encodeURIComponent(rpid), fail, integ, { genericError: true });
     const items = Array.isArray(data?.items) ? data!.items.filter(r => mine(r.patient_id) && r.kind === 'prescription').map(r => ({ id: r.id, title: r.title ?? '', occurredAt: r.occurred_at ?? null })) : [];
     await logAccess(env, { actorType: 'patient', actorId: patient!.id, patientUserId: patient!.id, remotePatientId: rpid, integrationId: integ, action: 'patient.receitas.list', ip, userAgent: ua });
     return json({ items });
@@ -208,7 +208,7 @@ async function contaApi(request: Request, env: Env): Promise<Response> {
   const rec = path.match(/^\/api\/conta\/receitas\/([\w-]+)$/);
   if (rec && method === 'GET') {
     await limit(env, 'conta-dados', patient!.tokenHash, 300);
-    const data = await consulFetch<any>(env, '/api/v1/records/' + encodeURIComponent(rec[1]), fail, integ);
+    const data = await consulFetch<any>(env, '/api/v1/records/' + encodeURIComponent(rec[1]), fail, integ, { notFoundNull: true, genericError: true });
     // CRÍTICO: só devolve se o registro for do paciente logado e for uma receita.
     if (!data || !mine(data.patient_id) || data.kind !== 'prescription') {
       await logAccess(env, { actorType: 'patient', actorId: patient!.id, patientUserId: patient!.id, remotePatientId: rpid, integrationId: integ, action: 'patient.receita.denied', resourceId: rec[1], ip, userAgent: ua });
