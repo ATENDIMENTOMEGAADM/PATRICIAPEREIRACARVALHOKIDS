@@ -1,0 +1,21 @@
+{
+  // Site + área restrita (/admin) + API própria do site (/api/*), com banco D1 separado do sistema de receitas.
+  "name": "site-patricia-carvalho",
+  "account_id": "7b09fe212e823ce7786f3e0ad3dcb830",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "routes": [
+    { "pattern": "patriciagastroped.com", "custom_domain": true },
+    { "pattern": "www.patriciagastroped.com", "custom_domain": true }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/admin", "/admin/*"]
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "site-patricia-carvalho", "database_id": "ada7a846-7ede-48cb-9dd4-c912e57d6bfd", "migrations_dir": "migrations" }
+  ],
+  "observability": { "enabled": true }
+}

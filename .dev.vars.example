@@ -1,0 +1,6 @@
+# Copie para .dev.vars (não versionado) para testar localmente com `npm run dev:full`.
+# Em produção, cadastre com `npx wrangler secret put NOME`.
+ADMIN_SETUP_TOKEN="troque-por-um-codigo-longo-de-instalacao"
+INTEGRATIONS_SECRET="troque-por-um-segredo-aleatorio-com-pelo-menos-32-caracteres"
+# Somente em desenvolvimento: permite conectar a um sistema de receitas em http://localhost.
+ALLOW_LOCAL_INTEGRATIONS="1"
