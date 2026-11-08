@@ -1,10 +1,12 @@
 // Senhas com PBKDF2 e chaves de integração cifradas com AES-GCM.
-// ITERATIONS: alvo OWASP 2023 para PBKDF2-HMAC-SHA256. O custo é LINEAR nas iterações (600k = 6x 100k)
-// e cada hash guarda as próprias iterações: hashes antigos continuam válidos e são regravados no
-// próximo login (needsRehash). Se o CPU do Worker não comportar, basta REDUZIR este número e
-// reimplantar — sem migração e sem invalidar senhas. Medir o CPU real pós-deploy. Ver docs/seguranca-portal.md.
+// ITERATIONS = 200000: ~2x o 100k que rodava em produção (margem de CPU folgada) e, ao mesmo tempo,
+// mantém pequeno o gap de tempo do login. A auditoria interna mostrou que um salto grande (600k) criava
+// um oráculo de existência de conta por tempo — hashes antigos (100k) respondem bem mais rápido que o
+// caminho de usuário inexistente. Com 200k o gap fica perto do ruído de rede e CONVERGE a zero conforme
+// os hashes antigos são regravados no próximo login (needsRehash). O custo é LINEAR nas iterações e cada
+// hash guarda as próprias, então mudar este número não invalida senhas (sem migração). Ver docs/seguranca-portal.md.
 const encoder = new TextEncoder();
-const ITERATIONS = 600000;
+const ITERATIONS = 200000;
 const b64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (value: string) => Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 

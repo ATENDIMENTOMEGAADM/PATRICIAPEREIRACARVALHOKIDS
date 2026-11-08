@@ -36,36 +36,31 @@ Antes, `patient_sessions`, `admin_sessions` e `login_attempts` só cresciam. Ago
 - O `access_log` **não** entra no expurgo (ver retenção acima).
 - Cron Triggers funcionam em qualquer plano; só passam a rodar **após o deploy** com o trigger.
 
-## 3. PBKDF2 (`worker/crypto.ts`): 100k → 600k
+## 3. PBKDF2 (`worker/crypto.ts`): 100k → 200k
 
-- `ITERATIONS` subiu de 100.000 para **600.000** (alvo OWASP 2023 para PBKDF2-HMAC-SHA256).
+- `ITERATIONS` subiu de 100.000 para **200.000**. A proposta inicial era 600k (alvo OWASP 2023), mas a
+  **auditoria interna** apontou dois problemas nesse salto: (a) 6× criava um **oráculo de existência de
+  conta por tempo** no login — hashes antigos (100k) respondem ~6× mais rápido que o caminho de usuário
+  inexistente, que deriva em 600k; e (b) risco de estourar o limite de CPU do Worker. **200k** resolve os
+  dois: é ~2× o 100k que já roda hoje (margem de CPU folgada) e o gap de tempo fica perto do ruído de
+  rede, convergindo a zero conforme os hashes antigos são regravados.
 - **Compatibilidade:** cada hash guarda as próprias iterações (`pbkdf2$<iter>$<salt>$<hash>`). Hashes
-  antigos (100k) continuam válidos e são **regravados no próximo login** (`needsRehash` → re-hash em
-  `/api/auth/login` e `/api/conta/login`). `setup` e aceite de convite já gravam em 600k.
-- **Medição (proxy):** WebCrypto nativo do Node (OpenSSL) nesta máquina — **não** representa o CPU do
-  edge (BoringSSL costuma ser mais rápido). O que é confiável é a **escala linear**:
-
-  | iterações | ms/hash (proxy) | ×100k |
-  |-----------|-----------------|-------|
-  | 100.000   | ~74             | 1,0   |
-  | 300.000   | ~224            | 3,0   |
-  | 600.000   | ~445            | 6,0   |
-
-  Ou seja: 600k custa **6× o 100k que já roda em produção hoje**.
-- **Limite de CPU do Worker (AÇÃO NO DEPLOY):** não dá para medir o CPU real do edge sem publicar.
-  A produção roda 100k sem erro, então 600k = 6× esse custo. Medir de verdade **após o deploy**:
-  Cloudflare → Workers → *site-patricia-carvalho* → Metrics → **CPU Time** (observability já está ligada).
-  Fazer **um login** e conferir. No plano gratuito (limite de 10 ms de CPU/req) 600k pode estourar; no
-  pago (padrão 30 s) sobra folga.
-- **Rollback (sem migração, sem invalidar senhas):** se um login estourar o CPU (resposta 503) ou ficar
-  lento demais, basta **reduzir** `ITERATIONS` (ex.: 300000 ou 200000) e reimplantar. Hashes já gravados
-  continuam válidos (as iterações ficam no próprio hash); sessões já abertas não fazem PBKDF2.
+  antigos (100k) continuam válidos e são **regravados no próximo login bem-sucedido** (`needsRehash` →
+  re-hash em `/api/auth/login` e `/api/conta/login`); `setup` e aceite de convite já gravam em 200k.
+  O re-hash só roda em login **bem-sucedido**, então a convergência depende de o usuário logar — para
+  drenar contas dormentes na hora seria preciso um reset de senha (não feito).
+- **Medição (proxy):** WebCrypto nativo do Node (OpenSSL) — não representa o CPU do edge, mas a escala é
+  **linear**: ~74 ms (100k), ~150 ms (200k), ~445 ms (600k) nesta máquina. 200k ≈ 2× um valor conhecido.
+- **No deploy:** conferir o **CPU Time** de um login em Workers → Metrics (observability ligada); com 200k
+  o risco é baixo. Mudar `ITERATIONS` e reimplantar **não invalida senhas** (as iterações ficam no próprio
+  hash) — sem migração.
 
 ## 4. Limites de tentativa e token de instalação
 
-- **Rate limit (revisado, mantido):** login da equipe e do paciente seguem **10/e-mail** e **50/IP** por
-  15 min; `conta-dados` 300/sessão; `conta-invite` 20/IP; `setup` 10/IP. O limite por e-mail já é o
-  lockout pedido; o de IP cobre força bruta sem travar NAT compartilhado. Chaves de limite são
+- **Rate limit:** login da equipe e do paciente usam **10 por (e-mail+IP)** e **50/IP** por 15 min;
+  `conta-dados` 300/sessão; `conta-invite` 20/IP; `setup` 10/IP. A chave do limite por e-mail inclui o
+  **IP** (ajuste da auditoria): assim um terceiro não trava o login da vítima a partir de outros IPs
+  (lockout direcionado), e o teto por IP segue cobrindo força bruta de uma origem. Chaves são
   `sha256(identidade)` (sem PII em claro).
 - **Token de instalação em tempo constante:** `/api/auth/setup` passou a comparar o `ADMIN_SETUP_TOKEN`
   com `constantTimeEqual` (sem curto-circuito), em vez de `!==`.

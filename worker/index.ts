@@ -174,7 +174,7 @@ async function contaApi(request: Request, env: Env): Promise<Response> {
   }
   if (path === '/api/conta/login' && method === 'POST') {
     const data = await readJson(request), address = email(data.email);
-    await limit(env, 'conta-login-ip', ip, 50); await limit(env, 'conta-login', address, 10);
+    await limit(env, 'conta-login-ip', ip, 50); await limit(env, 'conta-login', address + '|' + ip, 10);
     const row = await env.DB.prepare("SELECT id,name,password_hash FROM patient_users WHERE email=? AND status='active'").bind(address).first<Record<string, string>>();
     const pw = typeof data.password === 'string' ? data.password.slice(0, 128) : '';
     const valid = await verifyPassword(pw, row?.password_hash);
@@ -245,7 +245,7 @@ async function api(request: Request, env: Env): Promise<Response> {
   }
   if (path === '/api/auth/login' && method === 'POST') {
     const data = await readJson(request), address = email(data.email), ip = request.headers.get('CF-Connecting-IP') || 'local';
-    await limit(env, 'login-ip', ip, 50); await limit(env, 'login', address, 10);
+    await limit(env, 'login-ip', ip, 50); await limit(env, 'login', address + '|' + ip, 10);
     const row = await env.DB.prepare('SELECT id,name,email,password_hash FROM admin_users WHERE email=?').bind(address).first<Record<string, string>>();
     const pw = typeof data.password === 'string' ? data.password.slice(0, 128) : '';
     const valid = await verifyPassword(pw, row?.password_hash);
