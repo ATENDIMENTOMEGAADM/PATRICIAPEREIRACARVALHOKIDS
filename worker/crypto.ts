@@ -1,6 +1,10 @@
-// Senhas com PBKDF2 (limite de iterações do Workers) e chaves de integração cifradas com AES-GCM.
+// Senhas com PBKDF2 e chaves de integração cifradas com AES-GCM.
+// ITERATIONS: alvo OWASP 2023 para PBKDF2-HMAC-SHA256. O custo é LINEAR nas iterações (600k = 6x 100k)
+// e cada hash guarda as próprias iterações: hashes antigos continuam válidos e são regravados no
+// próximo login (needsRehash). Se o CPU do Worker não comportar, basta REDUZIR este número e
+// reimplantar — sem migração e sem invalidar senhas. Medir o CPU real pós-deploy. Ver docs/seguranca-portal.md.
 const encoder = new TextEncoder();
-const ITERATIONS = 100000;
+const ITERATIONS = 600000;
 const b64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (value: string) => Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 
@@ -24,6 +28,18 @@ export async function verifyPassword(password: string, encoded: string | undefin
   let diff = actual.length ^ expected.length;
   for (let i = 0; i < actual.length; i++) diff |= actual[i] ^ (expected[i] ?? 0);
   return valid && diff === 0;
+}
+// Regrava o hash no próximo login quando o formato mudou ou as iterações ficaram abaixo do padrão atual.
+export function needsRehash(encoded: string | undefined) {
+  const parts = (encoded || '').split('$');
+  return !(parts.length === 4 && parts[0] === 'pbkdf2' && Number(parts[1]) >= ITERATIONS);
+}
+// Comparação em tempo constante para segredos curtos (ex.: token de instalação), sem curto-circuito.
+export function constantTimeEqual(a: string, b: string) {
+  const ab = encoder.encode(a), bb = encoder.encode(b);
+  let diff = ab.length ^ bb.length;
+  for (let i = 0; i < ab.length; i++) diff |= ab[i] ^ (bb[i] ?? 0);
+  return diff === 0;
 }
 async function aesKey(secret: string) {
   return crypto.subtle.importKey('raw', await crypto.subtle.digest('SHA-256', encoder.encode(secret)), 'AES-GCM', false, ['encrypt', 'decrypt']);
