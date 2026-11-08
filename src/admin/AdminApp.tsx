@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Home, Settings, LogOut, Plug, Lock, Loader2, ArrowLeft } from 'lucide-react';
+import { Home, Settings, LogOut, Plug, Lock, Loader2, ArrowLeft, Users } from 'lucide-react';
 import { api, ApiError, type AdminUser } from './api';
 import ApiSettings from './ApiSettings';
+import PatientAccess from './PatientAccess';
 import { Field, ErrorText, inputClass, primaryButton, secondaryButton } from './ui';
 
 type State = { status: 'loading' } | { status: 'offline'; message: string } | { status: 'setup' } | { status: 'login' } | { status: 'ready'; user: AdminUser };
@@ -52,10 +53,10 @@ function AccessForm({ setup, onDone }: { setup: boolean; onDone: (user: AdminUse
   );
 }
 
-type Page = 'inicio' | 'configuracoes';
+type Page = 'inicio' | 'pacientes' | 'configuracoes';
 function Panel({ user, onLogout }: { user: AdminUser; onLogout: () => void }) {
-  const [page, setPage] = useState<Page>(() => (location.pathname.startsWith('/admin/configuracoes') ? 'configuracoes' : 'inicio'));
-  const go = (next: Page) => { setPage(next); history.replaceState(null, '', next === 'inicio' ? '/admin' : '/admin/configuracoes/api'); };
+  const [page, setPage] = useState<Page>(() => (location.pathname.startsWith('/admin/configuracoes') ? 'configuracoes' : location.pathname.startsWith('/admin/pacientes') ? 'pacientes' : 'inicio'));
+  const go = (next: Page) => { setPage(next); history.replaceState(null, '', next === 'inicio' ? '/admin' : next === 'pacientes' ? '/admin/pacientes' : '/admin/configuracoes/api'); };
   async function logout() { try { await api('auth/logout', {}); } finally { onLogout(); } }
   const nav = (id: Page, label: string, Icon: typeof Home) => (
     <button type="button" onClick={() => go(id)} aria-current={page === id ? 'page' : undefined}
@@ -69,6 +70,7 @@ function Panel({ user, onLogout }: { user: AdminUser; onLogout: () => void }) {
         <div className="hidden md:block p-6"><Brand /></div>
         <nav className="flex flex-1 gap-1 p-3 md:flex-col md:p-4" aria-label="Área restrita">
           {nav('inicio', 'Início', Home)}
+          {nav('pacientes', 'Pacientes', Users)}
           {nav('configuracoes', 'Configurações', Settings)}
         </nav>
         <div className="hidden md:block border-t border-gray-100 p-4 text-sm">
@@ -87,10 +89,21 @@ function Panel({ user, onLogout }: { user: AdminUser; onLogout: () => void }) {
             <section>
               <h1 className="font-serif text-3xl text-[#5A5350]">Olá, {user.name.split(' ')[0]}</h1>
               <p className="mt-2 text-gray-600">Esta é a área de administração do site da Dra. Patricia Carvalho.</p>
-              <button type="button" onClick={() => go('configuracoes')} className="mt-8 flex w-full max-w-md items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm transition-shadow hover:shadow-md">
-                <span className="rounded-xl bg-lilas/50 p-3 text-ametista"><Plug className="h-6 w-6" /></span>
-                <span><strong className="block text-[#5A5350]">Configurações → API</strong><span className="text-sm text-gray-500">Conecte o site ao sistema de receitas e a outras integrações.</span></span>
-              </button>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <button type="button" onClick={() => go('pacientes')} className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm transition-shadow hover:shadow-md">
+                  <span className="rounded-xl bg-verde-agua/15 p-3 text-[#3f7d72]"><Users className="h-6 w-6" /></span>
+                  <span><strong className="block text-[#5A5350]">Acessos de pacientes</strong><span className="text-sm text-gray-500">Dê ao paciente acesso à área dele (consultas e receitas).</span></span>
+                </button>
+                <button type="button" onClick={() => go('configuracoes')} className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm transition-shadow hover:shadow-md">
+                  <span className="rounded-xl bg-lilas/50 p-3 text-ametista"><Plug className="h-6 w-6" /></span>
+                  <span><strong className="block text-[#5A5350]">Configurações → API</strong><span className="text-sm text-gray-500">Conecte o site ao sistema de receitas.</span></span>
+                </button>
+              </div>
+            </section>
+          ) : page === 'pacientes' ? (
+            <section>
+              <h1 className="font-serif text-3xl text-[#5A5350]">Pacientes</h1>
+              <PatientAccess onUnauthorized={onLogout} />
             </section>
           ) : (
             <section>

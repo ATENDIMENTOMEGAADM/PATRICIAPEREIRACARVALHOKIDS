@@ -2,6 +2,7 @@
 // O site é independente do sistema de receitas; ele só se conecta por chave de API.
 import { encryptSecret, decryptSecret, hashPassword, verifyPassword, randomToken, sha256 } from './crypto';
 import { connectors, type ConnectorKind } from './connectors';
+import { consulFetch } from './receituario';
 
 interface D1Result<T> { results: T[] }
 interface D1Statement {
@@ -18,17 +19,18 @@ export interface Env {
   ALLOW_LOCAL_INTEGRATIONS?: string;
 }
 
-const COOKIE = '__Host-site_session', LIFETIME = 12 * 3600, IDLE = 2 * 3600;
+const COOKIE = '__Host-site_session', PATIENT_COOKIE = '__Host-patient_session', LIFETIME = 12 * 3600, IDLE = 2 * 3600;
 const now = () => Math.floor(Date.now() / 1000);
 
 class HttpError extends Error { constructor(public status: number, message: string) { super(message); } }
 const fail = (status: number, message: string): never => { throw new HttpError(status, message); };
 const json = (data: unknown, status = 200, headers: Record<string, string> = {}) =>
   Response.json(data, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...headers } });
-const cookie = (token: string, maxAge = LIFETIME) => `${COOKIE}=${token}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=${maxAge}`;
+const cookie = (token: string, maxAge = LIFETIME, name = COOKIE) => `${name}=${token}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=${maxAge}`;
 
 async function readJson(request: Request): Promise<Record<string, any>> {
   if (!request.headers.get('Content-Type')?.includes('application/json')) fail(415, 'Formato de envio inválido.');
+  if (Number(request.headers.get('Content-Length') || 0) > 20000) fail(413, 'Envio muito grande.');
   const text = await request.text();
   if (text.length > 20000) fail(413, 'Envio muito grande.');
   try { const data = JSON.parse(text || '{}'); if (!data || typeof data !== 'object' || Array.isArray(data)) throw Error(); return data; }
@@ -53,9 +55,9 @@ async function limit(env: Env, scope: string, identity: string, max: number) {
     .bind(key, t + 900, t, t).first<{ attempts: number }>();
   if ((row?.attempts ?? 0) > max) fail(429, 'Muitas tentativas. Aguarde 15 minutos.');
 }
-function sessionToken(request: Request) {
-  const found = (request.headers.get('Cookie') || '').split(';').map(v => v.trim()).find(v => v.startsWith(COOKIE + '='));
-  const token = found?.slice(COOKIE.length + 1) ?? '';
+function sessionToken(request: Request, name = COOKIE) {
+  const found = (request.headers.get('Cookie') || '').split(';').map(v => v.trim()).find(v => v.startsWith(name + '='));
+  const token = found?.slice(name.length + 1) ?? '';
   return /^[A-Za-z0-9_-]{43}$/.test(token) ? token : null;
 }
 async function currentUser(request: Request, env: Env) {
@@ -70,6 +72,21 @@ async function currentUser(request: Request, env: Env) {
 async function startSession(env: Env, userId: string) {
   const token = randomToken(), t = now();
   await env.DB.prepare('INSERT INTO admin_sessions (token_hash,user_id,created_at,last_seen,expires_at) VALUES (?,?,?,?,?)').bind(await sha256(token), userId, t, t, t + LIFETIME).run();
+  return token;
+}
+// --- Sessão do PACIENTE (separada da equipe: cookie e tabelas próprias) ---
+async function currentPatient(request: Request, env: Env) {
+  const token = sessionToken(request, PATIENT_COOKIE); if (!token) return null;
+  const t = now(), hash = await sha256(token);
+  const row = await env.DB.prepare("SELECT u.id,u.name,u.email,u.remote_patient_id,u.integration_id,s.last_seen FROM patient_sessions s JOIN patient_users u ON u.id=s.user_id WHERE s.token_hash=? AND u.status='active' AND s.expires_at>? AND s.last_seen>?")
+    .bind(hash, t, t - IDLE).first<{ id: string; name: string; email: string; remote_patient_id: string; integration_id: string; last_seen: number }>();
+  if (!row) return null;
+  if (row.last_seen < t - 60) await env.DB.prepare('UPDATE patient_sessions SET last_seen=? WHERE token_hash=?').bind(t, hash).run();
+  return { id: row.id, name: row.name, email: row.email, remotePatientId: row.remote_patient_id, integrationId: row.integration_id, tokenHash: hash };
+}
+async function startPatientSession(env: Env, userId: string) {
+  const token = randomToken(), t = now();
+  await env.DB.prepare('INSERT INTO patient_sessions (token_hash,user_id,created_at,last_seen,expires_at) VALUES (?,?,?,?,?)').bind(await sha256(token), userId, t, t, t + LIFETIME).run();
   return token;
 }
 // Toda alteração exige mesma origem; o cookie SameSite=Strict é a segunda barreira.
@@ -92,9 +109,78 @@ function secret(env: Env) {
   return env.INTEGRATIONS_SECRET as string;
 }
 
+// --- API da ÁREA DO PACIENTE (/api/conta/*), isolada da área da equipe ---
+async function contaApi(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url), path = url.pathname, method = request.method;
+  if (method !== 'GET') sameOrigin(request);
+  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+
+  if (path === '/api/conta/state' && method === 'GET') {
+    const p = await currentPatient(request, env);
+    return json({ user: p && { name: p.name } });
+  }
+  if (path === '/api/conta/invite' && method === 'GET') {
+    const token = url.searchParams.get('token') || '';
+    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) fail(400, 'Convite inválido.');
+    const row = await env.DB.prepare("SELECT name FROM patient_users WHERE invite_token_hash=? AND status='invited' AND invite_expires_at>?").bind(await sha256(token), now()).first<{ name: string }>();
+    if (!row) fail(404, 'Convite inválido ou expirado. Fale com a clínica.');
+    return json({ name: row!.name });
+  }
+  if (path === '/api/conta/invite/accept' && method === 'POST') {
+    const data = await readJson(request);
+    await limit(env, 'conta-invite', ip, 20);
+    const token = typeof data.token === 'string' ? data.token : '';
+    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) fail(400, 'Convite inválido.');
+    const pass = newPassword(data.password);
+    const row = await env.DB.prepare("SELECT id,name FROM patient_users WHERE invite_token_hash=? AND status='invited' AND invite_expires_at>?").bind(await sha256(token), now()).first<{ id: string; name: string }>();
+    if (!row) fail(404, 'Convite inválido ou expirado. Fale com a clínica.');
+    await env.DB.prepare("UPDATE patient_users SET password_hash=?, status='active', invite_token_hash=NULL, invite_expires_at=NULL WHERE id=?").bind(await hashPassword(pass), row!.id).run();
+    return json({ user: { name: row!.name } }, 200, { 'Set-Cookie': cookie(await startPatientSession(env, row!.id), LIFETIME, PATIENT_COOKIE) });
+  }
+  if (path === '/api/conta/login' && method === 'POST') {
+    const data = await readJson(request), address = email(data.email);
+    await limit(env, 'conta-login-ip', ip, 50); await limit(env, 'conta-login', address, 10);
+    const row = await env.DB.prepare("SELECT id,name,password_hash FROM patient_users WHERE email=? AND status='active'").bind(address).first<Record<string, string>>();
+    const valid = await verifyPassword(typeof data.password === 'string' ? data.password.slice(0, 128) : '', row?.password_hash);
+    if (!row || !valid) fail(401, 'E-mail ou senha incorretos.');
+    return json({ user: { name: row!.name } }, 200, { 'Set-Cookie': cookie(await startPatientSession(env, row!.id), LIFETIME, PATIENT_COOKIE) });
+  }
+
+  const patient = await currentPatient(request, env);
+  if (!patient) fail(401, 'Entre novamente na sua área.');
+  if (path === '/api/conta/logout' && method === 'POST') {
+    await env.DB.prepare('DELETE FROM patient_sessions WHERE token_hash=?').bind(patient!.tokenHash).run();
+    return json({ ok: true }, 200, { 'Set-Cookie': cookie('', 0, PATIENT_COOKIE) });
+  }
+  const rpid = patient!.remotePatientId, integ = patient!.integrationId;
+  const mine = (v: any) => String(v) === rpid; // posse por id, normalizando o tipo (string x number)
+  if (path === '/api/conta/consultas' && method === 'GET') {
+    await limit(env, 'conta-dados', patient!.tokenHash, 300);
+    const data = await consulFetch<{ last?: any; next?: any }>(env, '/api/v1/appointments?patient=' + encodeURIComponent(rpid), fail, integ);
+    const slim = (a: any) => a && mine(a.patient_id) ? { startsAt: a.starts_at ?? null, endsAt: a.ends_at ?? null, status: a.status ?? null } : null;
+    return json({ last: slim(data?.last), next: slim(data?.next) });
+  }
+  if (path === '/api/conta/receitas' && method === 'GET') {
+    await limit(env, 'conta-dados', patient!.tokenHash, 300);
+    const data = await consulFetch<{ items?: any[] }>(env, '/api/v1/records?kind=prescription&patient=' + encodeURIComponent(rpid), fail, integ);
+    const items = Array.isArray(data?.items) ? data!.items.filter(r => mine(r.patient_id) && r.kind === 'prescription').map(r => ({ id: r.id, title: r.title ?? '', occurredAt: r.occurred_at ?? null })) : [];
+    return json({ items });
+  }
+  const rec = path.match(/^\/api\/conta\/receitas\/([\w-]+)$/);
+  if (rec && method === 'GET') {
+    await limit(env, 'conta-dados', patient!.tokenHash, 300);
+    const data = await consulFetch<any>(env, '/api/v1/records/' + encodeURIComponent(rec[1]), fail, integ);
+    // CRÍTICO: só devolve se o registro for do paciente logado e for uma receita.
+    if (!data || !mine(data.patient_id) || data.kind !== 'prescription') fail(404, 'Receita não encontrada.');
+    return json({ id: data.id, title: data.title ?? '', occurredAt: data.occurred_at ?? null, payload: data.payload ?? null });
+  }
+  return fail(404, 'Rota não encontrada.');
+}
+
 async function api(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url), path = url.pathname, method = request.method;
   if (!env.DB) fail(503, 'Banco do site indisponível.');
+  if (path === '/api/conta' || path.startsWith('/api/conta/')) return contaApi(request, env);
   if (method !== 'GET') sameOrigin(request);
 
   if (path === '/api/auth/state' && method === 'GET') {
@@ -164,6 +250,46 @@ async function api(request: Request, env: Env): Promise<Response> {
     }
     return json(integrationView((await env.DB.prepare('SELECT * FROM integrations WHERE id=?').bind(action[1]).first())!));
   }
+
+  // --- Acessos de pacientes (provisionados pela equipe) ---
+  if (path === '/api/settings/pacientes/buscar' && method === 'GET') {
+    const q = (url.searchParams.get('q') || '').trim();
+    if (q.length < 2) return json({ items: [] });
+    const data = await consulFetch<{ items?: any[] }>(env, '/api/v1/patients?q=' + encodeURIComponent(q), fail);
+    const items = Array.isArray(data?.items) ? data!.items.slice(0, 20).map(p => ({ id: p.id, name: p.name ?? '', cpf: p.cpf || '', birthDate: p.birth_date || '' })) : [];
+    return json({ items });
+  }
+  if (path === '/api/settings/pacientes' && method === 'GET') {
+    const rows = await env.DB.prepare('SELECT id,name,email,status,remote_patient_id,created_at FROM patient_users ORDER BY created_at DESC LIMIT 200').all();
+    return json({ items: rows.results.map((r: any) => ({ id: r.id, name: r.name, email: r.email, status: r.status, createdAt: new Date(r.created_at * 1000).toISOString() })) });
+  }
+  if (path === '/api/settings/pacientes/acesso' && method === 'POST') {
+    const data = await readJson(request);
+    const remoteId = text(data.remotePatientId, 80, 'paciente'), address = email(data.email);
+    const integ = await env.DB.prepare("SELECT id FROM integrations WHERE kind='receituario' AND status='connected' ORDER BY created_at DESC LIMIT 1").first<{ id: string }>();
+    if (!integ) fail(503, 'Conecte o site ao sistema de receitas antes de criar acessos.');
+    const p = await consulFetch<any>(env, '/api/v1/patients/' + encodeURIComponent(remoteId), fail, integ!.id);
+    if (!p || !p.id) fail(404, 'Paciente não encontrado no sistema de receitas.');
+    const name = text(data.name || p.name, 120, 'nome'), t = now(), token = randomToken(), tokenHash = await sha256(token);
+    const existing = await env.DB.prepare('SELECT id,status FROM patient_users WHERE integration_id=? AND remote_patient_id=?').bind(integ!.id, p.id).first<{ id: string; status: string }>();
+    if (existing && existing.status === 'active') fail(409, 'Este paciente já tem acesso ativo.');
+    if (existing) {
+      await env.DB.prepare("UPDATE patient_users SET email=?, name=?, invite_token_hash=?, invite_expires_at=?, status='invited' WHERE id=?").bind(address, name, tokenHash, t + 604800, existing.id).run();
+    } else {
+      try {
+        await env.DB.prepare("INSERT INTO patient_users (id,email,name,remote_patient_id,integration_id,status,invite_token_hash,invite_expires_at,created_at) VALUES (?,?,?,?,?,'invited',?,?,?)")
+          .bind(crypto.randomUUID(), address, name, p.id, integ!.id, tokenHash, t + 604800, t).run();
+      } catch { fail(409, 'Já existe um acesso com esse e-mail.'); }
+    }
+    return json({ inviteUrl: url.origin + '/conta?convite=' + token, name }, 201);
+  }
+  const revoke = path.match(/^\/api\/settings\/pacientes\/([\w-]+)\/revogar$/);
+  if (revoke && method === 'POST') {
+    await env.DB.prepare('DELETE FROM patient_sessions WHERE user_id=?').bind(revoke[1]).run();
+    const r = await env.DB.prepare('DELETE FROM patient_users WHERE id=?').bind(revoke[1]).run();
+    if (!r.meta.changes) fail(404, 'Acesso não encontrado.');
+    return json({ ok: true });
+  }
   return fail(404, 'Rota não encontrada.');
 }
 
@@ -179,10 +305,10 @@ export default {
       }
     }
     const response = await env.ASSETS.fetch(request);
-    if (!url.pathname.startsWith('/admin')) return response;
+    if (!url.pathname.startsWith('/admin') && !url.pathname.startsWith('/conta')) return response;
     // A área restrita nunca é guardada em cache nem exibida dentro de outros sites.
     const headers = new Headers(response.headers);
-    headers.set('Cache-Control', 'no-store'); headers.set('X-Frame-Options', 'DENY'); headers.set('Referrer-Policy', 'same-origin');
+    headers.set('Cache-Control', 'no-store'); headers.set('X-Frame-Options', 'DENY'); headers.set('Referrer-Policy', 'no-referrer');
     headers.set('X-Robots-Tag', 'noindex');
     headers.set('X-Content-Type-Options', 'nosniff');
     headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
