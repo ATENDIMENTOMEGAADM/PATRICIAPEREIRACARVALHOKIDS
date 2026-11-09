@@ -18,7 +18,7 @@ async function receituario(env: Env, fail: Fail, integrationId?: string): Promis
 }
 
 // path já inclui o /api/v1/... e a query. Ex.: '/api/v1/records?patient=<id>&kind=prescription'.
-export async function consulFetch<T = any>(env: Env, path: string, fail: Fail, integrationId?: string): Promise<T> {
+export async function consulFetch<T = any>(env: Env, path: string, fail: Fail, integrationId?: string, opts?: { notFoundNull?: boolean; genericError?: boolean }): Promise<T> {
   const { baseUrl, key } = await receituario(env, fail, integrationId);
   let response: Response;
   try {
@@ -32,6 +32,10 @@ export async function consulFetch<T = any>(env: Env, path: string, fail: Fail, i
   let data: any = null;
   try { const raw = await response.text(); if (raw.length <= MAX_BYTES) data = raw ? JSON.parse(raw) : null; } catch { data = null; }
   if (response.status === 401 || response.status === 403) fail(502, 'O sistema de receitas recusou a conexão. Reconecte em Configurações → API.');
-  if (!response.ok) fail(502, (data && data.error) || 'O sistema de receitas respondeu com erro.');
+  // notFoundNull: um 404 do upstream vira null — o chamador decide. No portal do paciente isso vira um 404
+  // uniforme (igual ao "não é sua"), fechando o oráculo de existência de registro.
+  if (opts?.notFoundNull && response.status === 404) return null as T;
+  // genericError: não reflete o texto de erro do upstream ao paciente.
+  if (!response.ok) fail(502, opts?.genericError ? 'O sistema de receitas respondeu com erro.' : (data && data.error) || 'O sistema de receitas respondeu com erro.');
   return data as T;
 }

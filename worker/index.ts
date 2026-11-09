@@ -1,6 +1,6 @@
 // Backend do site: login da área restrita e integrações configuradas em Configurações → API.
 // O site é independente do sistema de receitas; ele só se conecta por chave de API.
-import { encryptSecret, decryptSecret, hashPassword, verifyPassword, randomToken, sha256 } from './crypto';
+import { encryptSecret, decryptSecret, hashPassword, verifyPassword, randomToken, sha256, needsRehash, constantTimeEqual } from './crypto';
 import { connectors, type ConnectorKind } from './connectors';
 import { consulFetch } from './receituario';
 
@@ -94,6 +94,40 @@ function sameOrigin(request: Request) {
   const url = new URL(request.url);
   if (request.headers.get('Origin') !== url.origin || request.headers.get('X-Site-Request') !== '1') fail(403, 'Reabra a área restrita e tente novamente.');
 }
+const clientIp = (request: Request) => request.headers.get('CF-Connecting-IP') || 'local';
+const userAgent = (request: Request) => request.headers.get('User-Agent')?.slice(0, 256) ?? null;
+
+// --- Trilha de auditoria (LGPD): registra acessos a dados de paciente e ações da equipe. ---
+// Best-effort: uma falha ao gravar o log NUNCA pode derrubar a requisição do usuário.
+interface AccessLogEntry {
+  actorType: 'patient' | 'staff' | 'system';
+  actorId?: string | null;
+  patientUserId?: string | null;
+  remotePatientId?: string | null;
+  integrationId?: string | null;
+  action: string;
+  resourceId?: string | null;
+  ip?: string | null;
+  userAgent?: string | null;
+}
+async function logAccess(env: Env, e: AccessLogEntry) {
+  try {
+    await env.DB.prepare('INSERT INTO access_log (id,created_at,actor_type,actor_id,patient_user_id,remote_patient_id,integration_id,action,resource_id,ip,user_agent) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+      .bind(crypto.randomUUID(), now(), e.actorType, e.actorId ?? null, e.patientUserId ?? null, e.remotePatientId ?? null, e.integrationId ?? null, e.action, e.resourceId ?? null, e.ip ?? null, e.userAgent ?? null).run();
+  } catch (error) { console.error('access_log falhou', (error as Error)?.name); }
+}
+
+// --- Expurgo de sessões expiradas e tentativas de login vencidas (Cron Trigger diário). ---
+// O access_log NÃO é expurgado aqui: é a trilha de auditoria e deve ser retida.
+async function purgeExpired(env: Env) {
+  const t = now();
+  const statements = [
+    env.DB.prepare('DELETE FROM patient_sessions WHERE expires_at<=? OR last_seen<=?').bind(t, t - IDLE),
+    env.DB.prepare('DELETE FROM admin_sessions WHERE expires_at<=? OR last_seen<=?').bind(t, t - IDLE),
+    env.DB.prepare('DELETE FROM login_attempts WHERE expires_at<=?').bind(t),
+  ];
+  for (const s of statements) { try { await s.run(); } catch (error) { console.error('expurgo falhou', (error as Error)?.name); } }
+}
 
 function integrationView(row: Record<string, any>) {
   return {
@@ -113,7 +147,7 @@ function secret(env: Env) {
 async function contaApi(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url), path = url.pathname, method = request.method;
   if (method !== 'GET') sameOrigin(request);
-  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+  const ip = clientIp(request), ua = userAgent(request);
 
   if (path === '/api/conta/state' && method === 'GET') {
     const p = await currentPatient(request, env);
@@ -132,17 +166,20 @@ async function contaApi(request: Request, env: Env): Promise<Response> {
     const token = typeof data.token === 'string' ? data.token : '';
     if (!/^[A-Za-z0-9_-]{43}$/.test(token)) fail(400, 'Convite inválido.');
     const pass = newPassword(data.password);
-    const row = await env.DB.prepare("SELECT id,name FROM patient_users WHERE invite_token_hash=? AND status='invited' AND invite_expires_at>?").bind(await sha256(token), now()).first<{ id: string; name: string }>();
+    const row = await env.DB.prepare("SELECT id,name,remote_patient_id,integration_id FROM patient_users WHERE invite_token_hash=? AND status='invited' AND invite_expires_at>?").bind(await sha256(token), now()).first<{ id: string; name: string; remote_patient_id: string; integration_id: string }>();
     if (!row) fail(404, 'Convite inválido ou expirado. Fale com a clínica.');
     await env.DB.prepare("UPDATE patient_users SET password_hash=?, status='active', invite_token_hash=NULL, invite_expires_at=NULL WHERE id=?").bind(await hashPassword(pass), row!.id).run();
+    await logAccess(env, { actorType: 'patient', actorId: row!.id, patientUserId: row!.id, remotePatientId: row!.remote_patient_id, integrationId: row!.integration_id, action: 'patient.invite.accept', ip, userAgent: ua });
     return json({ user: { name: row!.name } }, 200, { 'Set-Cookie': cookie(await startPatientSession(env, row!.id), LIFETIME, PATIENT_COOKIE) });
   }
   if (path === '/api/conta/login' && method === 'POST') {
     const data = await readJson(request), address = email(data.email);
-    await limit(env, 'conta-login-ip', ip, 50); await limit(env, 'conta-login', address, 10);
+    await limit(env, 'conta-login-ip', ip, 50); await limit(env, 'conta-login', address + '|' + ip, 10);
     const row = await env.DB.prepare("SELECT id,name,password_hash FROM patient_users WHERE email=? AND status='active'").bind(address).first<Record<string, string>>();
-    const valid = await verifyPassword(typeof data.password === 'string' ? data.password.slice(0, 128) : '', row?.password_hash);
+    const pw = typeof data.password === 'string' ? data.password.slice(0, 128) : '';
+    const valid = await verifyPassword(pw, row?.password_hash);
     if (!row || !valid) fail(401, 'E-mail ou senha incorretos.');
+    if (needsRehash(row!.password_hash)) await env.DB.prepare('UPDATE patient_users SET password_hash=? WHERE id=?').bind(await hashPassword(pw), row!.id).run();
     return json({ user: { name: row!.name } }, 200, { 'Set-Cookie': cookie(await startPatientSession(env, row!.id), LIFETIME, PATIENT_COOKIE) });
   }
 
@@ -156,22 +193,28 @@ async function contaApi(request: Request, env: Env): Promise<Response> {
   const mine = (v: any) => String(v) === rpid; // posse por id, normalizando o tipo (string x number)
   if (path === '/api/conta/consultas' && method === 'GET') {
     await limit(env, 'conta-dados', patient!.tokenHash, 300);
-    const data = await consulFetch<{ last?: any; next?: any }>(env, '/api/v1/appointments?patient=' + encodeURIComponent(rpid), fail, integ);
+    const data = await consulFetch<{ last?: any; next?: any }>(env, '/api/v1/appointments?patient=' + encodeURIComponent(rpid), fail, integ, { genericError: true });
     const slim = (a: any) => a && mine(a.patient_id) ? { startsAt: a.starts_at ?? null, endsAt: a.ends_at ?? null, status: a.status ?? null } : null;
+    await logAccess(env, { actorType: 'patient', actorId: patient!.id, patientUserId: patient!.id, remotePatientId: rpid, integrationId: integ, action: 'patient.consultas.read', ip, userAgent: ua });
     return json({ last: slim(data?.last), next: slim(data?.next) });
   }
   if (path === '/api/conta/receitas' && method === 'GET') {
     await limit(env, 'conta-dados', patient!.tokenHash, 300);
-    const data = await consulFetch<{ items?: any[] }>(env, '/api/v1/records?kind=prescription&patient=' + encodeURIComponent(rpid), fail, integ);
+    const data = await consulFetch<{ items?: any[] }>(env, '/api/v1/records?kind=prescription&patient=' + encodeURIComponent(rpid), fail, integ, { genericError: true });
     const items = Array.isArray(data?.items) ? data!.items.filter(r => mine(r.patient_id) && r.kind === 'prescription').map(r => ({ id: r.id, title: r.title ?? '', occurredAt: r.occurred_at ?? null })) : [];
+    await logAccess(env, { actorType: 'patient', actorId: patient!.id, patientUserId: patient!.id, remotePatientId: rpid, integrationId: integ, action: 'patient.receitas.list', ip, userAgent: ua });
     return json({ items });
   }
   const rec = path.match(/^\/api\/conta\/receitas\/([\w-]+)$/);
   if (rec && method === 'GET') {
     await limit(env, 'conta-dados', patient!.tokenHash, 300);
-    const data = await consulFetch<any>(env, '/api/v1/records/' + encodeURIComponent(rec[1]), fail, integ);
+    const data = await consulFetch<any>(env, '/api/v1/records/' + encodeURIComponent(rec[1]), fail, integ, { notFoundNull: true, genericError: true });
     // CRÍTICO: só devolve se o registro for do paciente logado e for uma receita.
-    if (!data || !mine(data.patient_id) || data.kind !== 'prescription') fail(404, 'Receita não encontrada.');
+    if (!data || !mine(data.patient_id) || data.kind !== 'prescription') {
+      await logAccess(env, { actorType: 'patient', actorId: patient!.id, patientUserId: patient!.id, remotePatientId: rpid, integrationId: integ, action: 'patient.receita.denied', resourceId: rec[1], ip, userAgent: ua });
+      fail(404, 'Receita não encontrada.');
+    }
+    await logAccess(env, { actorType: 'patient', actorId: patient!.id, patientUserId: patient!.id, remotePatientId: rpid, integrationId: integ, action: 'patient.receita.read', resourceId: String(data.id ?? rec[1]), ip, userAgent: ua });
     return json({ id: data.id, title: data.title ?? '', occurredAt: data.occurred_at ?? null, payload: data.payload ?? null });
   }
   return fail(404, 'Rota não encontrada.');
@@ -192,7 +235,7 @@ async function api(request: Request, env: Env): Promise<Response> {
     const data = await readJson(request), ip = request.headers.get('CF-Connecting-IP') || 'local';
     await limit(env, 'setup', ip, 10);
     if (!env.ADMIN_SETUP_TOKEN || env.ADMIN_SETUP_TOKEN.length < 16) fail(503, 'Configure o segredo ADMIN_SETUP_TOKEN no servidor antes de criar o primeiro acesso.');
-    if (data.setupToken !== env.ADMIN_SETUP_TOKEN) fail(403, 'Código de instalação incorreto.');
+    if (!constantTimeEqual(typeof data.setupToken === 'string' ? data.setupToken : '', env.ADMIN_SETUP_TOKEN)) fail(403, 'Código de instalação incorreto.');
     const name = text(data.name, 80, 'nome'), address = email(data.email), hash = await hashPassword(newPassword(data.password));
     const id = crypto.randomUUID();
     // O INSERT só acontece se ainda não houver nenhum administrador.
@@ -202,10 +245,12 @@ async function api(request: Request, env: Env): Promise<Response> {
   }
   if (path === '/api/auth/login' && method === 'POST') {
     const data = await readJson(request), address = email(data.email), ip = request.headers.get('CF-Connecting-IP') || 'local';
-    await limit(env, 'login-ip', ip, 50); await limit(env, 'login', address, 10);
+    await limit(env, 'login-ip', ip, 50); await limit(env, 'login', address + '|' + ip, 10);
     const row = await env.DB.prepare('SELECT id,name,email,password_hash FROM admin_users WHERE email=?').bind(address).first<Record<string, string>>();
-    const valid = await verifyPassword(typeof data.password === 'string' ? data.password.slice(0, 128) : '', row?.password_hash);
+    const pw = typeof data.password === 'string' ? data.password.slice(0, 128) : '';
+    const valid = await verifyPassword(pw, row?.password_hash);
     if (!row || !valid) fail(401, 'E-mail ou senha incorretos.');
+    if (needsRehash(row!.password_hash)) await env.DB.prepare('UPDATE admin_users SET password_hash=? WHERE id=?').bind(await hashPassword(pw), row!.id).run();
     return json({ user: { name: row!.name, email: row!.email } }, 200, { 'Set-Cookie': cookie(await startSession(env, row!.id)) });
   }
 
@@ -273,22 +318,31 @@ async function api(request: Request, env: Env): Promise<Response> {
     const name = text(data.name || p.name, 120, 'nome'), t = now(), token = randomToken(), tokenHash = await sha256(token);
     const existing = await env.DB.prepare('SELECT id,status FROM patient_users WHERE integration_id=? AND remote_patient_id=?').bind(integ!.id, p.id).first<{ id: string; status: string }>();
     if (existing && existing.status === 'active') fail(409, 'Este paciente já tem acesso ativo.');
+    const patientUserId = existing ? existing.id : crypto.randomUUID();
     if (existing) {
       await env.DB.prepare("UPDATE patient_users SET email=?, name=?, invite_token_hash=?, invite_expires_at=?, status='invited' WHERE id=?").bind(address, name, tokenHash, t + 604800, existing.id).run();
     } else {
       try {
         await env.DB.prepare("INSERT INTO patient_users (id,email,name,remote_patient_id,integration_id,status,invite_token_hash,invite_expires_at,created_at) VALUES (?,?,?,?,?,'invited',?,?,?)")
-          .bind(crypto.randomUUID(), address, name, p.id, integ!.id, tokenHash, t + 604800, t).run();
+          .bind(patientUserId, address, name, p.id, integ!.id, tokenHash, t + 604800, t).run();
       } catch { fail(409, 'Já existe um acesso com esse e-mail.'); }
     }
+    await logAccess(env, { actorType: 'staff', actorId: user!.id, patientUserId, remotePatientId: String(p.id), integrationId: integ!.id, action: existing ? 'staff.access.reinvite' : 'staff.access.create', ip: clientIp(request), userAgent: userAgent(request) });
     return json({ inviteUrl: url.origin + '/conta?convite=' + token, name }, 201);
   }
   const revoke = path.match(/^\/api\/settings\/pacientes\/([\w-]+)\/revogar$/);
   if (revoke && method === 'POST') {
+    const target = await env.DB.prepare('SELECT remote_patient_id,integration_id FROM patient_users WHERE id=?').bind(revoke[1]).first<{ remote_patient_id: string; integration_id: string }>();
     await env.DB.prepare('DELETE FROM patient_sessions WHERE user_id=?').bind(revoke[1]).run();
     const r = await env.DB.prepare('DELETE FROM patient_users WHERE id=?').bind(revoke[1]).run();
     if (!r.meta.changes) fail(404, 'Acesso não encontrado.');
+    await logAccess(env, { actorType: 'staff', actorId: user!.id, patientUserId: revoke[1], remotePatientId: target?.remote_patient_id ?? null, integrationId: target?.integration_id ?? null, action: 'staff.access.revoke', ip: clientIp(request), userAgent: userAgent(request) });
     return json({ ok: true });
+  }
+  if (path === '/api/settings/auditoria' && method === 'GET') {
+    const n = Math.min(Math.max(Number(url.searchParams.get('limit')) || 100, 1), 500);
+    const rows = await env.DB.prepare('SELECT l.created_at,l.actor_type,l.action,l.remote_patient_id,l.resource_id,l.ip,u.name AS patient_name,u.email AS patient_email FROM access_log l LEFT JOIN patient_users u ON u.id=l.patient_user_id ORDER BY l.created_at DESC LIMIT ?').bind(n).all();
+    return json({ items: rows.results.map((r: any) => ({ at: new Date(r.created_at * 1000).toISOString(), actor: r.actor_type, action: r.action, patientName: r.patient_name ?? null, patientEmail: r.patient_email ?? null, remotePatientId: r.remote_patient_id ?? null, resourceId: r.resource_id ?? null, ip: r.ip ?? null })) });
   }
   return fail(404, 'Rota não encontrada.');
 }
@@ -314,5 +368,9 @@ export default {
     headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     headers.set('Content-Security-Policy', "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self'");
     return new Response(response.body, { status: response.status, headers });
+  },
+  // Cron Trigger diário: limpa sessões expiradas e tentativas de login vencidas (não toca no access_log).
+  async scheduled(_event: unknown, env: Env): Promise<void> {
+    await purgeExpired(env);
   },
 };

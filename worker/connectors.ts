@@ -22,7 +22,7 @@ function origin(value: unknown, allowLocal: boolean, fail: Fail) {
 
 // O conector Consul+ só fala com os endereços oficiais do Consul+.
 // Impede enviar uma chave real a um host arbitrário (SSRF / egressão de segredo).
-const RECEITUARIO_HOSTS = new Set(['consulmais.com', 'www.consulmais.com', 'consul-plus.consulmais.workers.dev']);
+const RECEITUARIO_HOSTS = new Set(['consulmais.com', 'www.consulmais.com']);
 function receituarioBaseUrl(value: unknown, allowLocal: boolean, fail: Fail) {
   const result = origin(value, allowLocal, fail);
   const host = new URL(result).hostname;

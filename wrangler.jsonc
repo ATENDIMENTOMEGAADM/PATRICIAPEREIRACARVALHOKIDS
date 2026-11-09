@@ -17,5 +17,7 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "site-patricia-carvalho", "database_id": "ada7a846-7ede-48cb-9dd4-c912e57d6bfd", "migrations_dir": "migrations" }
   ],
+  // Expurgo diário (04:00 UTC = 01:00 em Marabá) de sessões expiradas e tentativas de login vencidas.
+  "triggers": { "crons": ["0 4 * * *"] },
   "observability": { "enabled": true }
 }
