@@ -36,24 +36,21 @@ Antes, `patient_sessions`, `admin_sessions` e `login_attempts` só cresciam. Ago
 - O `access_log` **não** entra no expurgo (ver retenção acima).
 - Cron Triggers funcionam em qualquer plano; só passam a rodar **após o deploy** com o trigger.
 
-## 3. PBKDF2 (`worker/crypto.ts`): 100k → 200k
+## 3. PBKDF2 (`worker/crypto.ts`): fixo em 100k (teto do Cloudflare Workers)
 
-- `ITERATIONS` subiu de 100.000 para **200.000**. A proposta inicial era 600k (alvo OWASP 2023), mas a
-  **auditoria interna** apontou dois problemas nesse salto: (a) 6× criava um **oráculo de existência de
-  conta por tempo** no login — hashes antigos (100k) respondem ~6× mais rápido que o caminho de usuário
-  inexistente, que deriva em 600k; e (b) risco de estourar o limite de CPU do Worker. **200k** resolve os
-  dois: é ~2× o 100k que já roda hoje (margem de CPU folgada) e o gap de tempo fica perto do ruído de
-  rede, convergindo a zero conforme os hashes antigos são regravados.
-- **Compatibilidade:** cada hash guarda as próprias iterações (`pbkdf2$<iter>$<salt>$<hash>`). Hashes
-  antigos (100k) continuam válidos e são **regravados no próximo login bem-sucedido** (`needsRehash` →
-  re-hash em `/api/auth/login` e `/api/conta/login`); `setup` e aceite de convite já gravam em 200k.
-  O re-hash só roda em login **bem-sucedido**, então a convergência depende de o usuário logar — para
-  drenar contas dormentes na hora seria preciso um reset de senha (não feito).
-- **Medição (proxy):** WebCrypto nativo do Node (OpenSSL) — não representa o CPU do edge, mas a escala é
-  **linear**: ~74 ms (100k), ~150 ms (200k), ~445 ms (600k) nesta máquina. 200k ≈ 2× um valor conhecido.
-- **No deploy:** conferir o **CPU Time** de um login em Workers → Metrics (observability ligada); com 200k
-  o risco é baixo. Mudar `ITERATIONS` e reimplantar **não invalida senhas** (as iterações ficam no próprio
-  hash) — sem migração.
+- **`ITERATIONS` fica em 100.000 — e tem que ficar.** O Cloudflare Workers **limita o PBKDF2 a 100.000
+  iterações**: acima disso, `crypto.subtle.deriveBits` lança **`NotSupportedError`** e o login retorna 503.
+  Foi tentado 600k (plano original, alvo OWASP) e depois 200k, e **os dois quebraram TODOS os logins em
+  produção** (`site api failure NotSupportedError` no `wrangler tail`) — revertido por hotfix. Conclusão:
+  o "reforço do PBKDF2" pedido na tarefa **não é possível nesta plataforma**; 100k é o teto.
+- **Sem oráculo de tempo:** como todas as contas usam o mesmo custo (100k), o caminho de usuário
+  inexistente custa igual ao de um usuário real — logo o oráculo de existência por tempo que a auditoria
+  apontou (quando havia mistura 100k/600k) **não existe** com tudo em 100k.
+- **Compatibilidade:** cada hash guarda as próprias iterações (`pbkdf2$<iter>$<salt>$<hash>`); mudar este
+  número não invalida senhas. `needsRehash` só regravaria hashes abaixo de 100k (não há).
+- **Se um dia hashing mais forte virar prioridade:** passaria por outra abordagem fora do limite nativo do
+  Workers (ex.: um serviço/Durable Object dedicado ao KDF). Fora de escopo — hoje o modelo de ameaça (D1
+  server-side, tokens guardados só como hash) torna 100k aceitável.
 
 ## 4. Limites de tentativa e token de instalação
 

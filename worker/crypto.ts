@@ -1,12 +1,11 @@
-// Senhas com PBKDF2 e chaves de integração cifradas com AES-GCM.
-// ITERATIONS = 200000: ~2x o 100k que rodava em produção (margem de CPU folgada) e, ao mesmo tempo,
-// mantém pequeno o gap de tempo do login. A auditoria interna mostrou que um salto grande (600k) criava
-// um oráculo de existência de conta por tempo — hashes antigos (100k) respondem bem mais rápido que o
-// caminho de usuário inexistente. Com 200k o gap fica perto do ruído de rede e CONVERGE a zero conforme
-// os hashes antigos são regravados no próximo login (needsRehash). O custo é LINEAR nas iterações e cada
-// hash guarda as próprias, então mudar este número não invalida senhas (sem migração). Ver docs/seguranca-portal.md.
+// Senhas com PBKDF2 (HMAC-SHA256) e chaves de integração cifradas com AES-GCM.
+// ⚠️ O Cloudflare Workers LIMITA o PBKDF2 a 100000 iterações: acima disso, crypto.subtle.deriveBits lança
+// NotSupportedError e QUEBRA o login (confirmado em produção ao tentar 200k/600k). Então 100000 é o TETO
+// desta plataforma — não dá para chegar aos ~600k do OWASP aqui. Em 100k o custo é uniforme entre TODAS as
+// contas (caminho dummy e reais), então NÃO há oráculo de existência por tempo. Cada hash guarda as próprias
+// iterações (pbkdf2$<iter>$<salt>$<hash>); mudar este número não invalida senhas. Ver docs/seguranca-portal.md.
 const encoder = new TextEncoder();
-const ITERATIONS = 200000;
+const ITERATIONS = 100000;
 const b64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (value: string) => Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 
